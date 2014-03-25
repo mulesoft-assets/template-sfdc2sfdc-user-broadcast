@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" 
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	version="EE-3.5.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:json="http://www.mulesoft.org/schema/mule/json"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<batch:job name="syncUsersBatch">
+		<batch:threading-profile poolExhaustedAction="WAIT" />
+		<batch:process-records>
+			<batch:step name="foreachUserInAGetUserInBStep">
+				<enricher source="#[payload]" target="#[recordVars['userInB']]"
+					doc:name="store result in record var 'userInB'">
+					<sfdc:query-single config-ref="SalesforceB"
+						query="SELECT Id FROM User WHERE Email = '#[payload['Email']]'"
+						doc:name="query User in Salesforce Instance B" />
+				</enricher>
+			</batch:step>
+			<batch:step name="foreachUserInAUpsertUserInBStep">
+				<expression-component doc:name="set ID for upsert"><![CDATA[if (recordVars['userInB'] instanceof NullPayload) {
+	// Remove ID as it is an insert
+	payload.remove('Id')
+} else {
+	// Add target system ID as it is an update
+    payload.put('Id', recordVars['userInB']['Id'])
+}
+]]></expression-component>
+				<expression-component
+					doc:name="remove unnecessary fields and map field types"><![CDATA[// We remove these fields as they are internally managed by SalesForce and it is not valid to create/update an object with them
+payload.remove('type');
+payload.remove('LastModifiedDate');]]></expression-component>
+                <expression-component doc:name="assign ProfileId and Username to the User"><![CDATA[// We map the profile IDs from SalesForce instance A to B, each profileId from the left (source instance) will be map to the one on the right (target instance)
+// TODO - You should change these IDs to the ones corresponding to your SalesForce instances profile IDs
+profilesMap = ['00e80000001CDZBAA4': '00e80000001CDZBAA4'];
+payload.put('ProfileId', profilesMap.get( payload['ProfileId'] ));
+
+// TODO - Each Username should be UNIQUE even between different sandboxes of a single instance
+// If you are trying this kick with one instance and multiple sandboxes, please make sure that the target username is not the same as the original as a duplicated username error will come up
+payload.put('Username',  payload['Username'] + '.target');]]></expression-component>
+				<batch:commit size="200" doc:name="Batch Commit">
+                    <logger message="Users to update/create: #[payload]" level="INFO" doc:name="log Users to update/create"/>
+                    <sfdc:upsert config-ref="SalesforceB" externalIdFieldName="Id" type="User" doc:name="upsert Users in Salesforce Instance B">
+                        <sfdc:objects ref="#[payload]"/>
+                    </sfdc:upsert>
+                    <logger message="Upsert result: #[payload]" level="INFO" doc:name="log Result"/>
+				</batch:commit>
+			</batch:step>
+            <batch:step name="setTempPasswordIfNewUserStep" filter-expression="#[recordVars['userInB'] is NullPayload]">
+                <sfdc:set-password config-ref="SalesforceB" userId="#[payload[0].id]" newPassword="${temp.password}" doc:name="set Temp Password for new User"/>
+                <logger message="Set Password result: #[payload]" level="INFO" doc:name="log Result"/>
+            </batch:step>
+		</batch:process-records>
+		<batch:on-complete>
+			<json:object-to-json-transformer
+				doc:name="transform BatchJobInstance to JSON" />
+			<logger level="INFO" doc:name="log 'Migration process has finished'"
+				message="Migration process has finished: #[payload]" />
+		</batch:on-complete>
+	</batch:job>
+
+</mule>

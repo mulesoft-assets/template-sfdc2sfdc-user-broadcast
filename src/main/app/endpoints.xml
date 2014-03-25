@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:batch="http://www.mulesoft.org/schema/mule/batch" 
+xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" 
+xmlns:http="http://www.mulesoft.org/schema/mule/http" 
+xmlns="http://www.mulesoft.org/schema/mule/core" 
+xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc"
+xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
+xmlns:spring="http://www.springframework.org/schema/beans" 
+version="EE-3.5.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
+
+	<!-- 	In this file you should declare all your inbound endpoints and from here controll the access to your application -->
+
+    <flow name="triggerFlow" processingStrategy="synchronous"   doc:name="triggerFlow" doc:description="This is the simpliest entry point to start the excecution of your Template
+Here you should: 
+	* Configure the inbound endpoint, in this case a polling to fetch data from origin system
+	* Handle any input parameter and set the scope of it so the main logic does not care from where it is called
+Here you should not: 
+	* Run validations against external systems
+	* Choose flow of you application based on input parameters">
+    	<poll doc:name="fireup Opportunity synchronization">
+            <fixed-frequency-scheduler frequency="${poll.frequencyMillis}" startDelay="${poll.startDelayMillis}" />
+            <watermark variable="lastQueryDate" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
+             <sfdc:query config-ref="SalesforceA" doc:name="query Users with filtering criteria from Salesforce Instance A" query="SELECT Email, FirstName, LastName, Username, Alias, TimeZoneSidKey, LocaleSidKey, EmailEncodingKey, ProfileId, LanguageLocaleKey, LastModifiedDate FROM User WHERE IsActive = true AND LastModifiedDate &amp;gt; ${startingDate}">
+            </sfdc:query>
+        </poll>
+        <logger message="#[payload]" level="INFO" doc:name="log created/updated Opportunities"/>
+        <batch:execute name="syncUsersBatch" doc:name="trigger syncOpportunitiesBatch"/>
+    </flow>
+    
+</mule>
