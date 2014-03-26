@@ -28,7 +28,7 @@ Here you should not:
     	<poll doc:name="fireup Opportunity synchronization">
             <fixed-frequency-scheduler frequency="${poll.frequencyMillis}" startDelay="${poll.startDelayMillis}" />
             <watermark variable="lastQueryDate" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
-             <sfdc:query config-ref="SalesforceA" doc:name="query Users with filtering criteria from Salesforce Instance A" query="SELECT Email, FirstName, LastName, Username, Alias, TimeZoneSidKey, LocaleSidKey, EmailEncodingKey, ProfileId, LanguageLocaleKey, LastModifiedDate FROM User WHERE IsActive = true AND LastModifiedDate &amp;gt; ${startingDate}">
+             <sfdc:query config-ref="SalesforceA" doc:name="query Users with filtering criteria from Salesforce Instance A" query="SELECT Email, FirstName, LastName, Username, Alias, Title, TimeZoneSidKey, LocaleSidKey, EmailEncodingKey, ProfileId, LanguageLocaleKey, LastModifiedDate FROM User WHERE IsActive = true AND LastModifiedDate &gt; #[lastQueryDate]">
             </sfdc:query>
         </poll>
         <logger message="#[payload]" level="INFO" doc:name="log created/updated Opportunities"/>

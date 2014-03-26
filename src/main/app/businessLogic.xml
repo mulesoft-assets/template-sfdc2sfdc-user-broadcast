@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
 	xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" 
 	xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
@@ -12,7 +12,8 @@
 http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
-http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
 	<batch:job name="syncUsersBatch">
 		<batch:threading-profile poolExhaustedAction="WAIT" />
 		<batch:process-records>
@@ -51,12 +52,18 @@ payload.put('Username',  payload['Username'] + '.target');]]></expression-compon
                         <sfdc:objects ref="#[payload]"/>
                     </sfdc:upsert>
                     <logger message="Upsert result: #[payload]" level="INFO" doc:name="log Result"/>
+                    <foreach doc:name="forEachUpsertSetPasswordOnlyIfUserWasCreated">
+                        <choice doc:name="Choice">
+                            <when expression="#[payload.created == true]">
+                                <sfdc:set-password config-ref="SalesforceB" userId="#[payload.id]" newPassword="${user.temp.password}" doc:name="set Temp Password for new User"/>
+                            </when>
+                            <otherwise>
+                                <logger message="User updated #[payload.id]" level="INFO" doc:name="log updated User"/>
+                            </otherwise>
+                        </choice>
+                    </foreach>
 				</batch:commit>
 			</batch:step>
-            <batch:step name="setTempPasswordIfNewUserStep" filter-expression="#[recordVars['userInB'] is NullPayload]">
-                <sfdc:set-password config-ref="SalesforceB" userId="#[payload[0].id]" newPassword="${temp.password}" doc:name="set Temp Password for new User"/>
-                <logger message="Set Password result: #[payload]" level="INFO" doc:name="log Result"/>
-            </batch:step>
 		</batch:process-records>
 		<batch:on-complete>
 			<json:object-to-json-transformer
