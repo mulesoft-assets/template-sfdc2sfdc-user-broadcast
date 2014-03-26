@@ -52,16 +52,6 @@ payload.put('Username',  payload['Username'] + '.target');]]></expression-compon
                         <sfdc:objects ref="#[payload]"/>
                     </sfdc:upsert>
                     <logger message="Upsert result: #[payload]" level="INFO" doc:name="log Result"/>
-                    <foreach doc:name="forEachUpsertSetPasswordOnlyIfUserWasCreated">
-                        <choice doc:name="Choice">
-                            <when expression="#[payload.created == true]">
-                                <sfdc:set-password config-ref="SalesforceB" userId="#[payload.id]" newPassword="${user.temp.password}" doc:name="set Temp Password for new User"/>
-                            </when>
-                            <otherwise>
-                                <logger message="User updated #[payload.id]" level="INFO" doc:name="log updated User"/>
-                            </otherwise>
-                        </choice>
-                    </foreach>
 				</batch:commit>
 			</batch:step>
 		</batch:process-records>
