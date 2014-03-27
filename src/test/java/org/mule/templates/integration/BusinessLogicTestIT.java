@@ -104,7 +104,8 @@ public class BusinessLogicTestIT extends AbstractTemplateTestCase {
 		userToUpdate = (Map<String, Object>) event.getMessage().getPayload();
 
 		userToUpdate.remove("type");
-		userToUpdate.put("FirstName", buildUniqueName(TEMPLATE_NAME, "U"));
+		userToUpdate.put("FirstName", buildUniqueName(TEMPLATE_NAME, "FN"));
+		userToUpdate.put("Title", buildUniqueName(TEMPLATE_NAME, "Title"));
 		
 		SubflowInterceptingChainLifecycleWrapper updateUserInAFlow = getSubFlow("updateUserInAFlow");
 		updateUserInAFlow.initialise();
@@ -156,6 +157,8 @@ public class BusinessLogicTestIT extends AbstractTemplateTestCase {
 		Map<String, Object> payload = (Map<String, Object>) event.getMessage().getPayload();
 		
 		assertEquals("The user should have been sync and new name must match", userToUpdate.get("FirstName"), payload.get("FirstName"));
+		
+		assertEquals("The user should have been sync and new title must match", userToUpdate.get("Title"), payload.get("Title"));
 		
 	}
 
