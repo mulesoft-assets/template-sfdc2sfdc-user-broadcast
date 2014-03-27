@@ -44,7 +44,7 @@ profilesMap = ['00e80000001CDZBAA4': '00e80000001CDZBAA4'];
 payload.put('ProfileId', profilesMap.get( payload['ProfileId'] ));
 
 // TODO - Each Username should be UNIQUE even between different sandboxes of a single instance
-// If you are trying this kick with one instance and multiple sandboxes, please make sure that the target username is not the same as the original as a duplicated username error will come up
+// If you are trying this Template with one instance and multiple sandboxes, please make sure that the target username is not the same as the original as a duplicated username error will come up
 payload.put('Username',  payload['Username'] + '.target');]]></expression-component>
 				<batch:commit size="200" doc:name="Batch Commit">
                     <logger message="Users to update/create: #[payload]" level="INFO" doc:name="log Users to update/create"/>

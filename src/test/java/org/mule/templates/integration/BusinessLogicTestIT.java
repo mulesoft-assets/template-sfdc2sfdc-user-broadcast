@@ -1,17 +1,9 @@
 package org.mule.templates.integration;
 
-import org.mule.templates.builders.SfdcObjectBuilder;
-import org.mule.templates.integration.AbstractTemplateTestCase;
-import org.mule.templates.test.utils.PipelineSynchronizeListener;
-import org.mule.templates.test.utils.ListenerProbe;
-
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
-import static org.mule.templates.builders.SfdcObjectBuilder.aUser;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,23 +15,14 @@ import org.junit.Test;
 import org.mule.MessageExchangePattern;
 import org.mule.api.MuleEvent;
 import org.mule.api.MuleException;
-import org.mule.api.context.notification.ServerNotification;
-import org.mule.api.lifecycle.InitialisationException;
-import org.mule.construct.Flow;
 import org.mule.context.notification.NotificationException;
-import org.mule.modules.salesforce.bulk.EnrichedUpsertResult;
 import org.mule.processor.chain.SubflowInterceptingChainLifecycleWrapper;
 import org.mule.tck.probe.PollingProber;
-import org.mule.tck.probe.Probe;
 import org.mule.tck.probe.Prober;
-import org.mule.transport.NullPayload;
+import org.mule.templates.test.utils.ListenerProbe;
+import org.mule.templates.test.utils.PipelineSynchronizeListener;
 
 import com.mulesoft.module.batch.BatchTestHelper;
-import com.mulesoft.module.batch.api.BatchJobInstance;
-import com.mulesoft.module.batch.api.notification.BatchNotification;
-import com.mulesoft.module.batch.api.notification.BatchNotificationListener;
-import com.mulesoft.module.batch.engine.BatchJobInstanceAdapter;
-import com.mulesoft.module.batch.engine.BatchJobInstanceStore;
 
 /**
  * The objective of this class is to validate the correct behavior of the Mule
@@ -56,17 +39,19 @@ public class BusinessLogicTestIT extends AbstractTemplateTestCase {
 
 	private BatchTestHelper helper;
 	
-	// TODO - Replace this ProfileId with one of your own org
-	private static final String DEFAULT_PROFILE_ID = "00e80000001CDZBAA4";
 	private static final String POLL_FLOW_NAME = "triggerFlow";
+	
+	// TODO - Replace this Email with one of your Test User's mail
+	private static final String USER_TO_UPDATE_EMAIL = "btest.one@mulesoft.com";
+	
+	private Map<String,Object> userToUpdate;
+	
+	private SubflowInterceptingChainLifecycleWrapper retrieveUserFromBFlow;
 
 	protected static final int TIMEOUT = 60;
 
 	private final Prober pollProber = new PollingProber(10000, 1000);
 	private final PipelineSynchronizeListener pipelineListener = new PipelineSynchronizeListener(POLL_FLOW_NAME);
-
-	private static SubflowInterceptingChainLifecycleWrapper checkUserflow;
-	private static List<Map<String, Object>> createdUsers = new ArrayList<Map<String, Object>>();
 
 	@BeforeClass
 	public static void init() {
@@ -91,15 +76,12 @@ public class BusinessLogicTestIT extends AbstractTemplateTestCase {
 
 		helper = new BatchTestHelper(muleContext);
 
-		checkOpportunityflow = getSubFlow("retrieveOpportunityFlow");
-		checkOpportunityflow.initialise();
-
-		checkAccountflow = getSubFlow("retrieveAccountFlow");
-		checkAccountflow.initialise();
+		retrieveUserFromBFlow = getSubFlow("retrieveUserFromBFlow");
+		retrieveUserFromBFlow.initialise();
 
 		createTestDataInSandBox();
 	}
-	
+
 	private void registerListeners() throws NotificationException {
 		muleContext.registerListener(pipelineListener);
 	}
@@ -107,18 +89,57 @@ public class BusinessLogicTestIT extends AbstractTemplateTestCase {
 	private void waitForPollToRun() {
 		pollProber.check(new ListenerProbe(pipelineListener));
 	}
+	
+	@SuppressWarnings("unchecked")
+	private void createTestDataInSandBox() throws MuleException, Exception {
+		
+		SubflowInterceptingChainLifecycleWrapper retrieveUserFromAFlow = getSubFlow("retrieveUserFromAFlow");
+		retrieveUserFromAFlow.initialise();
+		
+		Map<String,Object> userToRetrieveMail = new HashMap<String, Object>();
+		userToRetrieveMail.put("Email", USER_TO_UPDATE_EMAIL);
+		
+		MuleEvent event = retrieveUserFromAFlow.process(getTestEvent(userToRetrieveMail, MessageExchangePattern.REQUEST_RESPONSE));
+		
+		userToUpdate = (Map<String, Object>) event.getMessage().getPayload();
+
+		userToUpdate.remove("type");
+		userToUpdate.put("FirstName", buildUniqueName(TEMPLATE_NAME, "U"));
+		
+		SubflowInterceptingChainLifecycleWrapper updateUserInAFlow = getSubFlow("updateUserInAFlow");
+		updateUserInAFlow.initialise();
+		
+		List<Map<String,Object>> userList = new ArrayList<Map<String,Object>>();
+		userList.add(userToUpdate);
+		
+		event = updateUserInAFlow.process(getTestEvent(userList, MessageExchangePattern.REQUEST_RESPONSE));
+		
+	}
+	
+	protected String buildUniqueName(String templateName, String name) {
+		String timeStamp = new Long(new Date().getTime()).toString();
+		
+		StringBuilder builder = new StringBuilder();
+		builder.append(name);
+		builder.append(templateName);
+		builder.append(timeStamp);
+		
+		return builder.toString();
+	}
 
 
 	@After
 	public void tearDown() throws Exception {
 
 		stopFlowSchedulers(POLL_FLOW_NAME);
-		deleteTestDataFromSandBox();
+		
+		//Data from Sandbox should be cleaned in this step but since Users were not created (As they cannot be deleted) nothing is done
 
 	}
 
 	@Test
 	public void testMainFlow() throws Exception {
+		
 		// Run poll and wait for it to run
 		runSchedulersOnce(POLL_FLOW_NAME);
 		waitForPollToRun();
@@ -127,101 +148,15 @@ public class BusinessLogicTestIT extends AbstractTemplateTestCase {
 		helper.awaitJobTermination(TIMEOUT_SEC * 1000, 500);
 		helper.assertJobWasSuccessful();
 
-		assertNull("The user should not have been sync", invokeRetrieveUserFlow(checkUserflow, createdUsers.get(0)));
-
-		Map<String, String> payload = invokeRetrieveUserFlow(checkUserflow, createdUsers.get(1));
-		assertEquals("The user should have been sync", createdUsers.get(1).get("Email"), payload.get("Email"));
-	}
-
-	@SuppressWarnings("unchecked")
-	private Map<String, String> invokeRetrieveUserFlow(SubflowInterceptingChainLifecycleWrapper flow, Map<String, Object> user) throws Exception {
-		Map<String, Object> userMap = new HashMap<String, Object>();
-
-		userMap.put("Email", user.get("Email"));
-		userMap.put("FirstName", user.get("FirstName"));
-		userMap.put("LastName", user.get("LastName"));
-
-		MuleEvent event = flow.process(getTestEvent(userMap, MessageExchangePattern.REQUEST_RESPONSE));
-		Object payload = event.getMessage().getPayload();
-		if (payload instanceof NullPayload) {
-			return null;
-		} else {
-			return (Map<String, String>) payload;
-		}
-	}
-
-
-	@SuppressWarnings("unchecked")
-	private void createTestDataInSandBox() throws MuleException, Exception {
+		Map<String,Object> userToRetrieveMail = new HashMap<String, Object>();
+		userToRetrieveMail.put("Email", USER_TO_UPDATE_EMAIL);
 		
-		SubflowInterceptingChainLifecycleWrapper flow = getSubFlowAndInitialiseIt("createUserFlow");
-
+		MuleEvent event = retrieveUserFromBFlow.process(getTestEvent(userToRetrieveMail, MessageExchangePattern.REQUEST_RESPONSE));
 		
-	SfdcObjectBuilder baseUser = aUser() //
-				.with("TimeZoneSidKey", "GMT") //
-				.with("LocaleSidKey", "en_US") //
-				.with("EmailEncodingKey", "ISO-8859-1") //
-				.with("LanguageLocaleKey", "en_US") //
-				.with("ProfileId", DEFAULT_PROFILE_ID);
-
-		// This user should not be sync
-		createdUsers.add(baseUser //
-				.with("FirstName", "FirstName_0") //
-				.with("LastName", "LastName_0") //
-				.with("Alias", "Alias_0") //
-				.with("IsActive", false) //
-				.with("Username", generateUnique("some.email.0@fakemail.com")) //
-				.with("Email", "some.email.0@fakemail.com") //
-				.build());
-
-		// This user should BE sync
-		createdUsers.add(baseUser //
-				.with("FirstName", "FirstName_1") //
-				.with("LastName", "LastName_1") //
-				.with("Alias", "Alias_" + 1) //
-				.with("IsActive", true) //
-				.with("Username", generateUnique("some.email.1@fakemail.com")) //
-				.with("Email", "some.email.1@fakemail.com") //
-				.build());
-
-		MuleEvent event = flow.process(getTestEvent(createdUsers, MessageExchangePattern.REQUEST_RESPONSE));
-		List<EnrichedUpsertResult> results = (List<org.mule.modules.salesforce.bulk.EnrichedUpsertResult>) event.getMessage().getPayload();
-		for (int i = 0; i < results.size(); i++) {
-			createdUsers.get(i).put("Id", results.get(i).getId());
-		}
-	}
-
-	private void deleteTestDataFromSandBox() throws MuleException, Exception {
-		// Delete the created users in A
-		SubflowInterceptingChainLifecycleWrapper flow = getSubFlowAndInitialiseIt("deleteUserFromAFlow");
-
-		List<String> idList = new ArrayList<String>();
-		for (Map<String, Object> c : createdUsers) {
-			idList.add((String) c.get("Id"));
-		}
-		flow.process(getTestEvent(idList, MessageExchangePattern.REQUEST_RESPONSE));
-
-		// Delete the created users in B
-		flow = getSubFlowAndInitialiseIt("deleteUserFromBFlow");
-
-		idList.clear();
-		for (Map<String, Object> c : createdUsers) {
-			Map<String, String> user = invokeRetrieveUserFlow(checkUserflow, c);
-			if (user != null) {
-				idList.add(user.get("Id"));
-			}
-		}
-		flow.process(getTestEvent(idList, MessageExchangePattern.REQUEST_RESPONSE));
-	}
-
-	private SubflowInterceptingChainLifecycleWrapper getSubFlowAndInitialiseIt(String name) throws InitialisationException {
-		SubflowInterceptingChainLifecycleWrapper subFlow = getSubFlow(name);
-		subFlow.initialise();
-		return subFlow;
-	}
-
-	private String generateUnique(String string) {
-		return MessageFormat.format("{0}-{1}-{2}", TEMPLATE_NAME, System.currentTimeMillis(), string);
+		Map<String, Object> payload = (Map<String, Object>) event.getMessage().getPayload();
+		
+		assertEquals("The user should have been sync and new name must match", userToUpdate.get("FirstName"), payload.get("FirstName"));
+		
 	}
 
 }
