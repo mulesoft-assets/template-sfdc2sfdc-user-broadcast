@@ -19,8 +19,8 @@ import org.mule.context.notification.NotificationException;
 import org.mule.processor.chain.SubflowInterceptingChainLifecycleWrapper;
 import org.mule.tck.probe.PollingProber;
 import org.mule.tck.probe.Prober;
-import org.mule.templates.test.utils.ListenerProbe;
-import org.mule.templates.test.utils.PipelineSynchronizeListener;
+import org.mule.templates.utils.ListenerProbe;
+import org.mule.templates.utils.PipelineSynchronizeListener;
 
 import com.mulesoft.module.batch.BatchTestHelper;
 

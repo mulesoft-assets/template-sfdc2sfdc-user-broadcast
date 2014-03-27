@@ -1,4 +1,4 @@
-package org.mule.templates.test.utils;
+package org.mule.templates.utils;
 
 import org.mule.tck.probe.Probe;
 
