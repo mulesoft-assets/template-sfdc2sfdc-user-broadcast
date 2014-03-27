@@ -2,8 +2,10 @@
 
 + [Use Case](#usecase)
 + [Run it!](#runit)
+	* [A few Considerations](#afewconsiderations)
+    * [Running on Studio](#runonstudio)
     * [Running on CloudHub](#runoncloudhub)
-    * [Running on premise](#runonopremise)
+    * [Running on Mule ESB stand alone ](#runonmuleesbstandalone)
     * [Properties to be configured](#propertiestobeconfigured)
 + [Customize It!](#customizeit)
     * [config.xml](#configxml)
@@ -31,6 +33,24 @@ Finally during the On Complete stage the Template will logoutput statistics data
 
 Simple steps to get SFDC to SFDC User Broadcast running.
 
+## A few Considerations <a name="afewconsiderations" />
+
+There are a couple of things you should take into account before running this kick:
+
+1. **Users cannot be deleted in SalesForce:** For now, the only thing to do regarding users removal is disabling/deactivating them, but this won't make the username available for a new user.
+2. **Each user needs to be associated to a Profile:** SalesForce's profiles are what define the permissions the user will have for manipulating data and other users. Each SalesForce account has its own profiles. In this kick you will find a processor labeled *assignProfileId and Username to the User* where to map your Profile Ids from the source account to the ones in the target account. Note that for the integration test to run properly, you should change the constant *DEFAULT_PROFILE_ID* in *BusinessLogicTestIT* to one that's valid in your source test organization.
+3. **Working with sandboxes for the same account**: Although each sandbox should be a completely different environment, Usernames cannot be repeated in different sandboxes, i.e. if you have a user with username *bob.dylan* in *sandbox A*, you will not be able to create another user with username *bob.dylan* in *sandbox B*. If you are indeed working with Sandboxes for the same SalesForce account you will need to map the source username to a different one in the target sandbox, for this purpose, please refer to the processor labeled *assign ProfileId and Username to the User*.
+
+### Running on Studio <a name="runonstudio"/>
+Once you have imported your Anypoint Template into Anypoint Studio you need to follow these steps to run it:
+
++ Locate the properties file `mule.dev.properties`, in src/main/resources
++ Complete all the properties required as per the examples in the section [Properties to be configured](#propertiestobeconfigured)
++ Once that is done, right click on you Anypoint Template project folder 
++ Hover you mouse over `"Run as"`
++ Click on  `"Mule Application"`
+
+
 ## Running on CloudHub <a name="runoncloudhub"/>
 
 While [creating your application on CloudHub](http://www.mulesoft.org/documentation/display/current/Hello+World+on+CloudHub) (Or you can do it later as a next step), you need to go to Deployment > Advanced to set all environment variables detailed in **Properties to be configured** as well as the **mule.env**. 
@@ -38,7 +58,7 @@ While [creating your application on CloudHub](http://www.mulesoft.org/documentat
 Once your app is all set and started, there is no need to do anything else. Every time a User is created or modified, it will be automatically synchronised to SFDC Org B as long as it has an Email.
 
 
-## Running on premise <a name="runonopremise"/>
+## Running on Mule ESB stand alone  <a name="runonmuleesbstandalone"/>
 Complete all properties in one of the property files, for example in [mule.prod.properties] (../blob/master/src/main/resources/mule.prod.properties) and run your app with the corresponding environment variable to use it. To follow the example, this will be `mule.env=prod`.
 
 Once your app is all set and started, there is no need to do anything else. The application will poll SalesForce to know if there are any newly created or updated objects and synchronice them.
@@ -52,16 +72,6 @@ In order to use this Template you need to configure properties (Credentials, con
 + poll.frequencyMillis `60000`
 + poll.startDelayMillis `0`
 + watermark.defaultExpression `YESTERDAY`
-
-#### Account Sync Policy
-+ account.sync.policy `syncAccount`
-+ account.id.in.b `001n0000003fMWXAA2`
-
-**Note:** the property **account.sync.policy** can take any of the three following values: 
-
-+ **empty_value**: if the propety has no value assigned to it then application will do nothing in what respect to the account and it'll just move the contact over.
-+ **syncAccount**: it will try to create the contact's account should this is not pressent in the Salesforce instance B.
-+ **assignDummyAccount**: it will assign the cotact to an pre existing account in Salesforce instance B. For this it will use the value of  `account.id.in.b`. Finding the Id of the desired Account can be done by executing in your **Sales Force Developer Console** the following query: `SELECT Id, Name, Description FROM Account`.
 
 
 #### SalesForce Connector configuration for company A
@@ -113,15 +123,13 @@ Contains a [Catch Exception Strategy](http://www.mulesoft.org/documentation/disp
 # Testing the Template <a name="testingthetemplate"/>
 
 You will notice that the Template has been shipped with test.
-These devidi them self into two categories:
 
-+ Unit Tests
-+ Integration Tests
+**Consideration:** This template has only Integration Tests with a particular aspect compared to other templates. Users in SalesForce cannot be deleted in the UI or in the API, and for that reason, Users are not being created as part of test in order to avoid populating Sandboxes with data that cannoot be removed. Instead we are just updating an already existing User that can be defined by its Email. You should configure this before running tests.
 
 You can run any of them by just doing right click on the class and clicking on run as Junit test.
 
 Do bear in mind that you'll have to tell the test classes which property file to use.
-For you convinience we have added a file mule.test.properties located in "src/test/resources".
+For you convinience you can add a file mule.test.properties and locate it in "src/test/resources".
 In the run configurations of the test just make sure to add the following property:
 
 + -Dmule.env=test
