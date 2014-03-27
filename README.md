@@ -3,10 +3,10 @@
 + [Use Case](#usecase)
 + [Run it!](#runit)
 	* [A few Considerations](#afewconsiderations)
-    * [Running on Studio](#runonstudio)
+    * [Running on premise](#runonpremise)
     * [Running on CloudHub](#runoncloudhub)
-    * [Running on Mule ESB stand alone ](#runonmuleesbstandalone)
     * [Properties to be configured](#propertiestobeconfigured)
++ [API Calls](#apicalls)
 + [Customize It!](#customizeit)
     * [config.xml](#configxml)
     * [endpoints.xml](#endpointsxml)
@@ -19,6 +19,8 @@
 As a Salesforce admin I want to syncronize Users between two Salesfoce orgs.
 
 This Template should serve as a foundation for setting an online sync of Users from one SalesForce instance to another. Everytime there is a new User or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the User on the target org.
+
+What about Passwords? When the User is updated in the target instance, the password is not changed and therefore there is nothing to concern about in this case. Password set in case of User creation is not being covered by this template considering that many different approaches can be selected.
 
 Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
 
@@ -41,6 +43,11 @@ There are a couple of things you should take into account before running this ki
 2. **Each user needs to be associated to a Profile:** SalesForce's profiles are what define the permissions the user will have for manipulating data and other users. Each SalesForce account has its own profiles. In this kick you will find a processor labeled *assignProfileId and Username to the User* where to map your Profile Ids from the source account to the ones in the target account. Note that for the integration test to run properly, you should change the constant *DEFAULT_PROFILE_ID* in *BusinessLogicTestIT* to one that's valid in your source test organization.
 3. **Working with sandboxes for the same account**: Although each sandbox should be a completely different environment, Usernames cannot be repeated in different sandboxes, i.e. if you have a user with username *bob.dylan* in *sandbox A*, you will not be able to create another user with username *bob.dylan* in *sandbox B*. If you are indeed working with Sandboxes for the same SalesForce account you will need to map the source username to a different one in the target sandbox, for this purpose, please refer to the processor labeled *assign ProfileId and Username to the User*.
 
+## Running on premise <a name="runonopremise"/>
+
+In this section we detail the way you have to run you Anypoint Temple on you computer.
+
+
 ### Running on Studio <a name="runonstudio"/>
 Once you have imported your Anypoint Template into Anypoint Studio you need to follow these steps to run it:
 
@@ -51,17 +58,16 @@ Once you have imported your Anypoint Template into Anypoint Studio you need to f
 + Click on  `"Mule Application"`
 
 
+### Running on Mule ESB stand alone  <a name="runonmuleesbstandalone"/>
+Complete all properties in one of the property files, for example in [mule.prod.properties] (../blob/master/src/main/resources/mule.prod.properties) and run your app with the corresponding environment variable to use it. To follow the example, this will be `mule.env=prod`.
+
+Once your app is all set and started, there is no need to do anything else. The application will poll SalesForce to know if there are any newly created or updated objects and synchronice them.
+
 ## Running on CloudHub <a name="runoncloudhub"/>
 
 While [creating your application on CloudHub](http://www.mulesoft.org/documentation/display/current/Hello+World+on+CloudHub) (Or you can do it later as a next step), you need to go to Deployment > Advanced to set all environment variables detailed in **Properties to be configured** as well as the **mule.env**. 
 
 Once your app is all set and started, there is no need to do anything else. Every time a User is created or modified, it will be automatically synchronised to SFDC Org B as long as it has an Email.
-
-
-## Running on Mule ESB stand alone  <a name="runonmuleesbstandalone"/>
-Complete all properties in one of the property files, for example in [mule.prod.properties] (../blob/master/src/main/resources/mule.prod.properties) and run your app with the corresponding environment variable to use it. To follow the example, this will be `mule.env=prod`.
-
-Once your app is all set and started, there is no need to do anything else. The application will poll SalesForce to know if there are any newly created or updated objects and synchronice them.
 
 ## Properties to be configured (With examples) <a name="propertiestobeconfigured"/>
 
@@ -85,6 +91,18 @@ In order to use this Template you need to configure properties (Credentials, con
 + sfdc.b.password `JoanBaez456`
 + sfdc.b.securityToken `ces56arl7apQs56XTddf34X`
 + sfdc.b.url `https://login.salesforce.com/services/Soap/u/28.0`
+
+# API Calls <a name="apicalls"/>
+
+SalesForce imposes limites on the number of API Calls that can be made. Therefore calculating this amount may be an important factor to consider. User Broadcast Template calls to the API can be calculated using the formula:
+
+*** 1 + X + X / 200  *** 
+
+Being ***X*** the number of Users to be synchronized. 
+
+The division by ***200*** is because, by default, Users are gathered in groups of 200 for each Upsert API Call in the commit step. Also consider that this calls are executed repeatedly every polling cycle.	
+
+For instance if 10 records are fetched from origin instance, then 12 api calls will be made (1 + 10 + 1).
 
 # Customize It!<a name="customizeit"/>
 
@@ -119,6 +137,9 @@ This is file is not used in this particular Template, but you'll oftenly find fl
 
 ## errorHandling.xml<a name="errorhandlingxml"/>
 Contains a [Catch Exception Strategy](http://www.mulesoft.org/documentation/display/current/Catch+Exception+Strategy) that is only Logging the exception thrown (If so). As you imagine, this is the right place to handle how your integration will react depending on the different exceptions.
+
+
+
 
 # Testing the Template <a name="testingthetemplate"/>
 
