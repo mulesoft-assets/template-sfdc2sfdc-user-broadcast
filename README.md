@@ -2,7 +2,7 @@
 
 + [Use Case](#usecase)
 + [Run it!](#runit)
-	* [A few Considerations](#afewconsiderations)
+    * [A few Considerations](#afewconsiderations)
     * [Running on premise](#runonpremise)
     * [Running on CloudHub](#runoncloudhub)
     * [Properties to be configured](#propertiestobeconfigured)
@@ -43,7 +43,7 @@ There are a couple of things you should take into account before running this ki
 2. **Each user needs to be associated to a Profile:** SalesForce's profiles are what define the permissions the user will have for manipulating data and other users. Each SalesForce account has its own profiles. In this kick you will find a processor labeled *assignProfileId and Username to the User* where to map your Profile Ids from the source account to the ones in the target account. Note that for the integration test to run properly, you should change the constant *DEFAULT_PROFILE_ID* in *BusinessLogicTestIT* to one that's valid in your source test organization.
 3. **Working with sandboxes for the same account**: Although each sandbox should be a completely different environment, Usernames cannot be repeated in different sandboxes, i.e. if you have a user with username *bob.dylan* in *sandbox A*, you will not be able to create another user with username *bob.dylan* in *sandbox B*. If you are indeed working with Sandboxes for the same SalesForce account you will need to map the source username to a different one in the target sandbox, for this purpose, please refer to the processor labeled *assign ProfileId and Username to the User*.
 
-## Running on premise <a name="runonopremise"/>
+## Running on premise <a name="runonpremise"/>
 
 In this section we detail the way you have to run you Anypoint Temple on you computer.
 
@@ -94,11 +94,11 @@ In order to use this Template you need to configure properties (Credentials, con
 
 # API Calls <a name="apicalls"/>
 
-SalesForce imposes limites on the number of API Calls that can be made. Therefore calculating this amount may be an important factor to consider. User Broadcast Template calls to the API can be calculated using the formula:
+SalesForce imposes limits on the number of API Calls that can be made. Therefore calculating this amount may be an important factor to consider. User Broadcast Template calls to the API can be calculated using the formula:
 
-*** 1 + X + X / 200  *** 
+***1 + X + X / 200***
 
-Being ***X*** the number of Users to be synchronized. 
+Being ***X*** the number of Users to be synchronized on each run. 
 
 The division by ***200*** is because, by default, Users are gathered in groups of 200 for each Upsert API Call in the commit step. Also consider that this calls are executed repeatedly every polling cycle.	
 
