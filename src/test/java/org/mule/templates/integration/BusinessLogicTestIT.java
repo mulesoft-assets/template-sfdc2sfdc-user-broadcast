@@ -25,12 +25,10 @@ import org.mule.templates.utils.PipelineSynchronizeListener;
 import com.mulesoft.module.batch.BatchTestHelper;
 
 /**
- * The objective of this class is to validate the correct behavior of the Mule
- * Template that make calls to external systems.
+ * The objective of this class is to validate the correct behavior of the Mule Template that make calls to external systems.
  * 
- * The test will invoke the batch process and afterwards check that the users
- * had been correctly created and that the ones that should be filtered are not
- * in the destination sand box.
+ * The test will invoke the batch process and afterwards check that the users had been correctly created and that the ones that should be filtered are not in
+ * the destination sand box.
  * 
  */
 public class BusinessLogicTestIT extends AbstractTemplateTestCase {
@@ -38,14 +36,14 @@ public class BusinessLogicTestIT extends AbstractTemplateTestCase {
 	private static final String TEMPLATE_NAME = "sfdc2sfdc-user-broadcast";
 
 	private BatchTestHelper helper;
-	
+
 	private static final String POLL_FLOW_NAME = "triggerFlow";
-	
+
 	// TODO - Replace this Email with one of your Test User's mail
 	private static final String USER_TO_UPDATE_EMAIL = "btest.one@mulesoft.com";
-	
-	private Map<String,Object> userToUpdate;
-	
+
+	private Map<String, Object> userToUpdate;
+
 	private SubflowInterceptingChainLifecycleWrapper retrieveUserFromBFlow;
 
 	protected static final int TIMEOUT = 60;
@@ -89,58 +87,58 @@ public class BusinessLogicTestIT extends AbstractTemplateTestCase {
 	private void waitForPollToRun() {
 		pollProber.check(new ListenerProbe(pipelineListener));
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private void createTestDataInSandBox() throws MuleException, Exception {
-		
+
 		SubflowInterceptingChainLifecycleWrapper retrieveUserFromAFlow = getSubFlow("retrieveUserFromAFlow");
 		retrieveUserFromAFlow.initialise();
-		
-		Map<String,Object> userToRetrieveMail = new HashMap<String, Object>();
+
+		Map<String, Object> userToRetrieveMail = new HashMap<String, Object>();
 		userToRetrieveMail.put("Email", USER_TO_UPDATE_EMAIL);
-		
+
 		MuleEvent event = retrieveUserFromAFlow.process(getTestEvent(userToRetrieveMail, MessageExchangePattern.REQUEST_RESPONSE));
-		
-		userToUpdate = (Map<String, Object>) event.getMessage().getPayload();
+
+		userToUpdate = (Map<String, Object>) event.getMessage()
+													.getPayload();
 
 		userToUpdate.remove("type");
 		userToUpdate.put("FirstName", buildUniqueName(TEMPLATE_NAME, "FN"));
 		userToUpdate.put("Title", buildUniqueName(TEMPLATE_NAME, "Title"));
-		
+
 		SubflowInterceptingChainLifecycleWrapper updateUserInAFlow = getSubFlow("updateUserInAFlow");
 		updateUserInAFlow.initialise();
-		
-		List<Map<String,Object>> userList = new ArrayList<Map<String,Object>>();
+
+		List<Map<String, Object>> userList = new ArrayList<Map<String, Object>>();
 		userList.add(userToUpdate);
-		
+
 		event = updateUserInAFlow.process(getTestEvent(userList, MessageExchangePattern.REQUEST_RESPONSE));
-		
+
 	}
-	
+
 	protected String buildUniqueName(String templateName, String name) {
 		String timeStamp = new Long(new Date().getTime()).toString();
-		
+
 		StringBuilder builder = new StringBuilder();
 		builder.append(name);
 		builder.append(templateName);
 		builder.append(timeStamp);
-		
+
 		return builder.toString();
 	}
-
 
 	@After
 	public void tearDown() throws Exception {
 
 		stopFlowSchedulers(POLL_FLOW_NAME);
-		
-		//Data from Sandbox should be cleaned in this step but since Users were not created (As they cannot be deleted) nothing is done
+
+		// Data from Sandbox should be cleaned in this step but since Users were not created (As they cannot be deleted) nothing is done
 
 	}
 
 	@Test
 	public void testMainFlow() throws Exception {
-		
+
 		// Run poll and wait for it to run
 		runSchedulersOnce(POLL_FLOW_NAME);
 		waitForPollToRun();
@@ -149,17 +147,18 @@ public class BusinessLogicTestIT extends AbstractTemplateTestCase {
 		helper.awaitJobTermination(TIMEOUT_SEC * 1000, 500);
 		helper.assertJobWasSuccessful();
 
-		Map<String,Object> userToRetrieveMail = new HashMap<String, Object>();
+		Map<String, Object> userToRetrieveMail = new HashMap<String, Object>();
 		userToRetrieveMail.put("Email", USER_TO_UPDATE_EMAIL);
-		
+
 		MuleEvent event = retrieveUserFromBFlow.process(getTestEvent(userToRetrieveMail, MessageExchangePattern.REQUEST_RESPONSE));
-		
-		Map<String, Object> payload = (Map<String, Object>) event.getMessage().getPayload();
-		
+
+		Map<String, Object> payload = (Map<String, Object>) event.getMessage()
+																	.getPayload();
+
 		assertEquals("The user should have been sync and new name must match", userToUpdate.get("FirstName"), payload.get("FirstName"));
-		
+
 		assertEquals("The user should have been sync and new title must match", userToUpdate.get("Title"), payload.get("Title"));
-		
+
 	}
 
 }
