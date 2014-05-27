@@ -24,7 +24,7 @@ import org.mule.transport.NullPayload;
  * 
  * @author cesar.garcia
  */
-public class AbstractTemplateTestCase extends FunctionalTestCase {
+public abstract class AbstractTemplateTestCase extends FunctionalTestCase {
 
 	private static final String MAPPINGS_FOLDER_PATH = "./mappings";
 	private static final String TEST_FLOWS_FOLDER_PATH = "./src/test/resources/flows/";
