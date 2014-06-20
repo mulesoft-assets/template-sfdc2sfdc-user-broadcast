@@ -40,7 +40,7 @@ public class BusinessLogicTestIT extends AbstractTemplateTestCase {
 	private static final String POLL_FLOW_NAME = "triggerFlow";
 
 	// TODO - Replace this Email with one of your Test User's mail
-	private static final String USER_TO_UPDATE_EMAIL = "btest.one@mulesoft.com";
+	private static final String USER_TO_UPDATE_EMAIL = "noreply@chatter.salesforce.com";
 
 	private Map<String, Object> userToUpdate;
 
