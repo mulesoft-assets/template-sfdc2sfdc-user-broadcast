@@ -30,7 +30,6 @@ import com.mulesoft.module.batch.BatchTestHelper;
  * Anypoint Template that make calls to external systems.
  * 
  * @author Vlado Andoga
- * 
  */
 @SuppressWarnings("unchecked")
 public class BusinessLogicPushNotificationIT extends AbstractTemplateTestCase {

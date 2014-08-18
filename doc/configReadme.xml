@@ -5,7 +5,7 @@
 	</placeholders>
 	<sections>
 		<section id="use_case">
-As a Salesforce admin I want to syncronize Users between two Salesfoce orgs.
+As a Salesforce admin I want to synchronize Users between two Salesfoce orgs.
 
 This Template should serve as a foundation for setting an online sync of Users from one SalesForce instance to another. Everytime there is a new User or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the User on the target org.
 
@@ -18,7 +18,7 @@ The batch job is divided in Input, Process and On Complete stages.
 The integration is triggered by a poll defined in the flow that is going to trigger the application, querying newest SalesForce updates/creations matching a filter criteria and executing the batch job.
 During the Process stage, each SFDC User will be filtered depending on, if it has an existing matching user in the SFDC Org B.
 The last step of the Process stage will group the users and create/update them in SFDC Org B.
-Finally during the On Complete stage the Template will logoutput statistics data into the console.
+Finally during the On Complete stage the Template will log output statistics data into the console.
 		</section>
 		<section id="considerations">
 <![CDATA[
@@ -41,7 +41,7 @@ Once your app is all set and started, there is no need to do anything else. The 
 		</section>
 		<section id="running_on_cloudhub">
 <![CDATA[
-Once your app is all set and started, there is no need to do anything else. Every time a User is created or modified, it will be automatically synchronised to SFDC Org B as long as it has an Email.
+Once your app is all set and started, there is no need to do anything else. Every time a User is created or modified, it will be automatically synchronised to SFDC Org B as long as it has an Email. Once your app is all set and started, you will need to define Salesforce outbound messaging and a simple workflow rule. This article will show you how to accomplish this. The most important setting here is the Endpoint URL which needs to point to your application running on Cloudbhub, eg. http://yourapp.cloudhub.io:80. Additionaly, try to add just few fields to the fields to send to keep it simple for begin. Once this all is done, every time when you will make a change on Account in source Salesforce org. This account will be sent as a SOAP message to the Http endpoint of running application in Cloudhub.
 ]]>
 		</section>
 		<section id="application_configuration">
