@@ -5,7 +5,7 @@
 	xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:spring="http://www.springframework.org/schema/beans" 
-	version="EE-3.5.0"
+	version="EE-3.5.1"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xmlns:json="http://www.mulesoft.org/schema/mule/json"
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
@@ -38,10 +38,11 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
 					doc:name="remove unnecessary fields and map field types"><![CDATA[// We remove these fields as they are internally managed by SalesForce and it is not valid to create/update an object with them
 payload.remove('type');
 payload.remove('LastModifiedDate');]]></expression-component>
-                <expression-component doc:name="assign ProfileId and Username to the User"><![CDATA[// We map the profile IDs from SalesForce instance A to B, each profileId from the left (source instance) will be map to the one on the right (target instance)
+                <expression-component doc:name="assign ProfileId and Username to the User"><![CDATA[// We map the profile IDs from SalesForce instance A to B, each profileId from the left (source instance) will be map to the one on the right (target instance) or put only target profile id to be mapped.
 // TODO - You should change these IDs to the ones corresponding to your SalesForce instances profile IDs
-profilesMap = ['00e80000001CDZBAA4': '00e80000001CDZBAA4'];
-payload.put('ProfileId', profilesMap.get( payload['ProfileId'] ));
+//profilesMap = ['00e80000001CDZBAA4': '00e20000001m8laAAA'];
+//payload.put('ProfileId', profilesMap.get( payload['ProfileId'] ));
+payload.put('ProfileId', '00e20000001UzDxAAK');
 
 // TODO - Each Username should be UNIQUE even between different sandboxes of a single instance
 // If you are trying this Template with one instance and multiple sandboxes, please make sure that the target username is not the same as the original as a duplicated username error will come up
@@ -62,5 +63,9 @@ payload.put('Username',  payload['Username'] + '.target');]]></expression-compon
 				message="Migration process has finished: #[payload]" />
 		</batch:on-complete>
 	</batch:job>
+    <flow name="mainFlow" doc:name="mainFlow">
+        <batch:execute name="syncUsersBatch" doc:name="trigger syncUsersBatch"/>
+        <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="catch Exception and call defaultChoiceExceptionStrategy"/>
+    </flow>
 
 </mule>

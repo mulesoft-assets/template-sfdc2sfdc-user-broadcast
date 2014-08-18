@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="sf:sobject.enterprise.soap.sforce.com" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="Title" type="xs:string"/>
+  <xs:element name="EmployeeNumber" type="xs:byte"/>
+  <xs:element name="City" type="xs:string"/>
+  <xs:element name="EmailEncodingKey" type="xs:string"/>
+  <xs:element name="ProfileId" type="xs:string"/>
+  <xs:element name="Email" type="xs:string"/>
+  <xs:element name="LocaleSidKey" type="xs:string"/>
+  <xs:element name="TimeZoneSidKey" type="xs:string"/>
+  <xs:element name="LanguageLocaleKey" type="xs:string"/>
+  <xs:element name="AboutMe" type="xs:string"/>
+  <xs:element name="FirstName" type="xs:string"/>
+  <xs:element name="Country" type="xs:string"/>
+  <xs:element name="Id" type="xs:string"/>
+  <xs:element name="LastName" type="xs:string"/>
+  <xs:element name="CompanyName" type="xs:string"/>
+  <xs:element name="CommunityNickname" type="xs:string"/>
+  <xs:element name="Username" type="xs:string"/>
+  <xs:element name="Alias" type="xs:string"/>
+</xs:schema>

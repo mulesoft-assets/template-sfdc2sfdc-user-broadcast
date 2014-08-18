@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+ <soapenv:Body>
+  <notifications xmlns="http://soap.sforce.com/2005/09/outbound">
+   <OrganizationId>00Dd0000000dtDqEAI</OrganizationId>
+   <ActionId>04kd0000000PCgvAAG</ActionId>
+   <SessionId xsi:nil="true"/>
+   <EnterpriseUrl>https://na14.salesforce.com/services/Soap/c/30.0/00Dd0000000dtDq</EnterpriseUrl>
+   <PartnerUrl>https://na14.salesforce.com/services/Soap/u/30.0/00Dd0000000dtDq</PartnerUrl>
+   <Notification>
+    <Id>001d000001XD5XKAA2</Id>
+    <sObject xsi:type="sf:User" xmlns:sf="sf:sobject.enterprise.soap.sforce.com">
+               <!--Zero or more repetitions:-->
+               <sf:Id>001d000001XD5XKAA2</sf:Id>
+               <sf:ProfileId>00e80000001CDZBAA4</sf:ProfileId>
+               <sf:AboutMe>About me</sf:AboutMe>
+               <sf:Alias>First</sf:Alias>
+               <sf:City>Kosice</sf:City>
+               <sf:CommunityNickname>Community name</sf:CommunityNickname>
+               <sf:CompanyName>Hotovo</sf:CompanyName>
+               <sf:Country>Slovakia</sf:Country>
+               <sf:Email>First@email.sk</sf:Email>
+               <sf:EmailEncodingKey>UTF-8</sf:EmailEncodingKey>
+               <sf:EmployeeNumber>100</sf:EmployeeNumber>
+               <sf:FirstName>First</sf:FirstName>
+               <sf:LastName>Last</sf:LastName>
+               <sf:Username>First@email.sk</sf:Username>
+               <sf:Title>Msc</sf:Title>
+               <sf:TimeZoneSidKey>Europe/Dublin</sf:TimeZoneSidKey>
+               <sf:LocaleSidKey>en_US</sf:LocaleSidKey>
+               <sf:LanguageLocaleKey>en_US</sf:LanguageLocaleKey>
+            </sObject>
+   </Notification>
+  </notifications>
+ </soapenv:Body>
+</soapenv:Envelope>

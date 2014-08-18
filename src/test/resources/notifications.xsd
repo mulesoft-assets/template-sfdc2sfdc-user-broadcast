@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://soap.sforce.com/2005/09/outbound" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="notifications" type="out:notificationsType" xmlns:out="http://soap.sforce.com/2005/09/outbound"/>
+  <xs:complexType name="NotificationType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Id"/>
+      <xs:element type="out:sObjectType" name="sObject" xmlns:out="http://soap.sforce.com/2005/09/outbound"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="sObjectType">
+    <xs:sequence>
+      <xs:element ref="sf:Id" xmlns:sf="sf:sobject.enterprise.soap.sforce.com">
+        <xs:annotation>
+          <xs:documentation>Zero or more repetitions:</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="sf:AboutMe" xmlns:sf="sf:sobject.enterprise.soap.sforce.com"/>
+      <xs:element ref="sf:Alias" xmlns:sf="sf:sobject.enterprise.soap.sforce.com"/>
+      <xs:element ref="sf:City" xmlns:sf="sf:sobject.enterprise.soap.sforce.com"/>
+      <xs:element ref="sf:CommunityNickname" xmlns:sf="sf:sobject.enterprise.soap.sforce.com"/>
+      <xs:element ref="sf:CompanyName" xmlns:sf="sf:sobject.enterprise.soap.sforce.com"/>
+      <xs:element ref="sf:Country" xmlns:sf="sf:sobject.enterprise.soap.sforce.com"/>
+      <xs:element ref="sf:Email" xmlns:sf="sf:sobject.enterprise.soap.sforce.com"/>
+      <xs:element ref="sf:EmailEncodingKey" xmlns:sf="sf:sobject.enterprise.soap.sforce.com"/>
+      <xs:element ref="sf:EmployeeNumber" xmlns:sf="sf:sobject.enterprise.soap.sforce.com"/>
+      <xs:element ref="sf:FirstName" xmlns:sf="sf:sobject.enterprise.soap.sforce.com"/>
+      <xs:element ref="sf:LastName" xmlns:sf="sf:sobject.enterprise.soap.sforce.com"/>
+      <xs:element ref="sf:Username" xmlns:sf="sf:sobject.enterprise.soap.sforce.com"/>
+      <xs:element ref="sf:Title" xmlns:sf="sf:sobject.enterprise.soap.sforce.com"/>
+      <xs:element ref="sf:TimeZoneSidKey" xmlns:sf="sf:sobject.enterprise.soap.sforce.com"/>
+      <xs:element ref="sf:LocaleSidKey" xmlns:sf="sf:sobject.enterprise.soap.sforce.com"/>
+      <xs:element ref="sf:ProfileId" xmlns:sf="sf:sobject.enterprise.soap.sforce.com"/>
+      <xs:element ref="sf:LanguageLocaleKey" xmlns:sf="sf:sobject.enterprise.soap.sforce.com"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="notificationsType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="OrganizationId"/>
+      <xs:element type="xs:string" name="ActionId"/>
+      <xs:element type="xs:string" name="SessionId" nillable="true"/>
+      <xs:element type="xs:string" name="EnterpriseUrl"/>
+      <xs:element type="xs:string" name="PartnerUrl"/>
+      <xs:element type="out:NotificationType" name="Notification" xmlns:out="http://soap.sforce.com/2005/09/outbound"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
