@@ -40,9 +40,9 @@ payload.remove('type');
 payload.remove('LastModifiedDate');]]></expression-component>
                 <expression-component doc:name="assign ProfileId and Username to the User"><![CDATA[// We map the profile IDs from SalesForce instance A to B, each profileId from the left (source instance) will be map to the one on the right (target instance) or put only target profile id to be mapped.
 // TODO - You should change these IDs to the ones corresponding to your SalesForce instances profile IDs
-//profilesMap = ['00e80000001CDZBAA4': '00e20000001m8laAAA'];
-//payload.put('ProfileId', profilesMap.get( payload['ProfileId'] ));
-payload.put('ProfileId', '00e20000001UzDxAAK');
+/profilesMap = ['00e80000001CDZBAA4': '00e20000001m8laAAA'];
+payload.put('ProfileId', profilesMap.get( payload['ProfileId'] ));
+//payload.put('ProfileId', '00e20000001UzDxAAK');
 
 // TODO - Each Username should be UNIQUE even between different sandboxes of a single instance
 // If you are trying this Template with one instance and multiple sandboxes, please make sure that the target username is not the same as the original as a duplicated username error will come up
