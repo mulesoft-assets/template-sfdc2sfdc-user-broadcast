@@ -23,8 +23,6 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 
         <choice doc:name="Trigger Policy">
             <when expression="#['push' == '${trigger.policy}']">
-                <object-to-string-transformer doc:name="Input to String" doc:description="Transforms input (SOAP) to string for a logger."/>
-                <logger message="Message from outbound : #[payload]" level="DEBUG" doc:name="Log input payload"/>
                 <dw:transform-message doc:name="XML to User">
                     <dw:set-payload><![CDATA[%dw 1.0
 %input payload application/xml
@@ -32,6 +30,7 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 ---
 payload.Envelope.Body.notifications.Notification.*sObject]]></dw:set-payload>
                 </dw:transform-message>
+                <logger message="Message from outbound : #[payload]" level="DEBUG" doc:name="Log input payload"/>
                 <flow-ref name="mainFlow" doc:name="trigger mainFlow"/>
             </when>
             <otherwise>

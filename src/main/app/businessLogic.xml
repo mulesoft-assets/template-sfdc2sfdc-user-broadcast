@@ -22,40 +22,31 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 		<batch:process-records>
 			<batch:step name="foreachUserInAGetUserInBStep">
 				<enricher source="#[payload == null ? null : payload.Id]" target="#[payload.Id]"
-					doc:name="set payload's Id">
+					doc:name="store existing user Id in payload 'Id'">
 					<sfdc:query-single config-ref="SalesforceB"
 						query="SELECT Id FROM User WHERE Email = '#[payload['Email']]'"
 						doc:name="query User in Salesforce Instance B" />
 				</enricher>
 			</batch:step>
 			<batch:step name="foreachUserInAUpsertUserInBStep">
-                <dw:transform-message doc:name="Prepare for Upsert">
-                    <dw:set-payload><![CDATA[%dw 1.0
+
+				<batch:commit size="200" doc:name="Batch Commit">
+                    <dw:transform-message doc:name="Prepare for Upsert">
+                        <dw:set-payload><![CDATA[%dw 1.0
 %input payload application/java
 %output application/java
 ---
-payload 
-// remove forbidden fields for upsert 
-- "type" 
-- "LastModifiedDate"
-// add profile ID and add suffix to username
-++ {
-	ProfileId 	: p("sfdc.b.profile.id"),
-	Username	: payload.Username ++ ".target"
-}
+payload map (
+	// remove forbidden fields for upsert
+	$ - "type" - "LastModifiedDate"
+	// add profile id and unique username
+	++ {
+		ProfileId 	: p("sfdc.b.profile.id"),
+		Username	: $.Username ++ ".target"
+	}
+)	
 ]]></dw:set-payload>
-                </dw:transform-message>
-
-                <expression-component doc:name="assign ProfileId and Username to the User"><![CDATA[// We map the profile IDs from SalesForce instance A to B, each profileId from the left (source instance) will be map to the one on the right (target instance) or put only target profile id to be mapped.
-// TODO - You should change these IDs to the ones corresponding to your SalesForce instances profile IDs
-//profilesMap = ['00e80000001CDZBAA4': '00e20000001m8laAAA'];
-//payload.put('ProfileId', profilesMap.get( payload['ProfileId'] ));
-//payload.put('ProfileId', '00e20000001UzDxAAK');
-
-// TODO - Each Username should be UNIQUE even between different sandboxes of a single instance
-// If you are trying this Template with one instance and multiple sandboxes, please make sure that the target username is not the same as the original as a duplicated username error will come up
-//payload.put('Username',  payload['Username'] + '.target');]]></expression-component>
-				<batch:commit size="200" doc:name="Batch Commit">
+                    </dw:transform-message>
                     <logger message="Users to update/create: #[payload]" level="INFO" doc:name="log Users to update/create"/>
                     <sfdc:upsert config-ref="SalesforceB" externalIdFieldName="Id" type="User" doc:name="upsert Users in Salesforce Instance B">
                         <sfdc:objects ref="#[payload]"/>
