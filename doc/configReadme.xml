@@ -49,6 +49,7 @@ Once this all is done every time when you will make a change on Account in sourc
 		<section id="application_configuration">
 		<![CDATA[
 + http.port `9090` 
++ page.size `200`
 + poll.frequencyMillis `60000`
 + poll.startDelayMillis `0`
 + watermark.defaultExpression `YESTERDAY`

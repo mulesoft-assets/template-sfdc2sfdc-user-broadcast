@@ -8,6 +8,7 @@ package org.mule.templates.integration;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,12 +17,11 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mule.DefaultMuleMessage;
 import org.mule.MessageExchangePattern;
 import org.mule.api.MuleEvent;
-import org.mule.api.MuleMessage;
 import org.mule.construct.Flow;
 import org.mule.context.notification.NotificationException;
+import org.mule.transformer.types.DataTypeFactory;
 
 import com.mulesoft.module.batch.BatchTestHelper;
 
@@ -86,8 +86,10 @@ public class BusinessLogicPushNotificationIT extends AbstractTemplateTestCase {
 	public void testMainFlow() throws Exception {
 		// Execution
 		String firstName = buildUniqueName();
-		MuleMessage message = new DefaultMuleMessage(buildRequest(firstName), muleContext);
-		MuleEvent testEvent = getTestEvent(message, MessageExchangePattern.REQUEST_RESPONSE);
+		
+		final MuleEvent testEvent = getTestEvent(null, triggerPushFlow);
+		testEvent.getMessage().setPayload(buildRequest(firstName), DataTypeFactory.create(InputStream.class, "application/xml"));
+		
 		triggerPushFlow.process(testEvent);
 		
 		helper.awaitJobTermination(TIMEOUT_MILLIS * 1000, 500);
@@ -96,9 +98,9 @@ public class BusinessLogicPushNotificationIT extends AbstractTemplateTestCase {
 		Map<String, Object> userToRetrieveMail = new HashMap<String, Object>();
 		userToRetrieveMail.put("Email", USER_EMAIL);
 
-		MuleEvent event = retrieveUserFromBFlow.process(getTestEvent(userToRetrieveMail, MessageExchangePattern.REQUEST_RESPONSE));
+		final MuleEvent retrieveEvent = retrieveUserFromBFlow.process(getTestEvent(userToRetrieveMail, MessageExchangePattern.REQUEST_RESPONSE));
 
-		Map<String, Object> payload = (Map<String, Object>) event.getMessage().getPayload();
+		Map<String, Object> payload = (Map<String, Object>) retrieveEvent.getMessage().getPayload();
 
 		// Assertions
 		assertEquals("The user should have been sync and new name must match", firstName, payload.get("FirstName"));
