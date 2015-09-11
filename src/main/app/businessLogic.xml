@@ -36,13 +36,20 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 %output application/java
 ---
 payload map (
-	// remove forbidden fields for upsert
-	$ - "type" - "LastModifiedDate"
-	// add profile id and unique username
-	+ {
-		ProfileId 	: p("sfdc.b.profile.id"),
-		Username	: $.Username + ".target"
+	{
+		Alias : $.Alias,
+		Email : $.Email,
+		EmailEncodingKey : $.EmailEncodingKey,
+		FirstName : $.FirstName,
+		LastName: $.LastName,
+		LanguageLocaleKey : $.LanguageLocaleKey,
+		LocaleSidKey : $.LocaleSidKey,
+		TimeZoneSidKey : $.TimeZoneSidKey,
+		Title : $.Title,
+		ProfileId : p("sfdc.b.profile.id"),
+		Username : $.Username ++ ".target"
 	}
+
 )	
 ]]></dw:set-payload>
                     </dw:transform-message>

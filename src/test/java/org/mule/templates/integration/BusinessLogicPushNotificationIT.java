@@ -6,7 +6,7 @@
 
 package org.mule.templates.integration;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -70,6 +70,9 @@ public class BusinessLogicPushNotificationIT extends AbstractTemplateTestCase {
 	private void initialiseSubFlows() throws Exception {
 		retrieveUserFromBFlow = getSubFlow("retrieveUserFromBFlow");
 		retrieveUserFromBFlow.initialise();
+		
+		retrieveUserByNameFromBFlow = getSubFlow("retrieveUserByNameFromBFlow");
+		retrieveUserByNameFromBFlow.initialise();
 	}
 	
 	private void registerListeners() throws NotificationException {
@@ -95,15 +98,15 @@ public class BusinessLogicPushNotificationIT extends AbstractTemplateTestCase {
 		helper.awaitJobTermination(TIMEOUT_MILLIS * 1000, 500);
 		helper.assertJobWasSuccessful();
 
-		Map<String, Object> userToRetrieveMail = new HashMap<String, Object>();
-		userToRetrieveMail.put("Email", USER_EMAIL);
+		Map<String, Object> userToRetrieveByName = new HashMap<String, Object>();
+		userToRetrieveByName.put("FirstName", firstName);
 
-		final MuleEvent retrieveEvent = retrieveUserFromBFlow.process(getTestEvent(userToRetrieveMail, MessageExchangePattern.REQUEST_RESPONSE));
+		final MuleEvent retrieveEvent = retrieveUserByNameFromBFlow.process(getTestEvent(userToRetrieveByName, MessageExchangePattern.REQUEST_RESPONSE));
 
 		Map<String, Object> payload = (Map<String, Object>) retrieveEvent.getMessage().getPayload();
 
-		// Assertions
-		assertEquals("The user should have been sync and new name must match", firstName, payload.get("FirstName"));
+		// Assertion, if the upserted user was found
+		assertTrue(payload.size()> 0);
 	}
 
 	/**

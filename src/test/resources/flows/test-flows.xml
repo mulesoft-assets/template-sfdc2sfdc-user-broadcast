@@ -23,8 +23,12 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
         <logger level="INFO" message="Update User in A result: #[payload]" doc:name="Logger"/>
     </sub-flow>
     <sub-flow name="retrieveUserFromBFlow" >
-        <sfdc:query-single config-ref="SalesforceB" query="SELECT Email, FirstName, LastName, Username, Alias, Title, TimeZoneSidKey, LocaleSidKey, EmailEncodingKey, ProfileId, LanguageLocaleKey FROM User WHERE Email = '#[payload['Email']]'" doc:name="retrieve User in Salesforce instance B"/>
+        <sfdc:query-single config-ref="SalesforceB" query="SELECT Email, FirstName, LastName, Username, Alias, Title, TimeZoneSidKey, LocaleSidKey, EmailEncodingKey, ProfileId, LanguageLocaleKey FROM User WHERE Email = '#[payload['Email']]' and Active = true" doc:name="retrieve User in Salesforce instance B"/>
         <logger level="INFO" message="Retrieve User from B result: #[payload]" doc:name="Logger"/>
+    </sub-flow>
+    <sub-flow name="retrieveUserByNameFromBFlow">
+        <sfdc:query-single config-ref="SalesforceB" query="dsql:SELECT Email, FirstName, LastName, Username, Alias, Title, TimeZoneSidKey, LocaleSidKey, EmailEncodingKey, ProfileId, LanguageLocaleKey FROM User WHERE FirstName = '#[payload['FirstName']]'" doc:name="retrieve User in Salesforce instance B"/>
+        <logger message="Retrieve User from B result: #[payload]" level="INFO" doc:name="Logger"/>
     </sub-flow>  
        
 </mule>

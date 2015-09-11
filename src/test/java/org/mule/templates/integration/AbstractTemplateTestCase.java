@@ -47,6 +47,7 @@ public abstract class AbstractTemplateTestCase extends FunctionalTestCase {
 	protected SubflowInterceptingChainLifecycleWrapper updateUserInAFlow;
 	
 	protected SubflowInterceptingChainLifecycleWrapper retrieveUserFromBFlow;
+	protected SubflowInterceptingChainLifecycleWrapper retrieveUserByNameFromBFlow;
 
 	@Rule
 	public DynamicPort port = new DynamicPort("http.port");
