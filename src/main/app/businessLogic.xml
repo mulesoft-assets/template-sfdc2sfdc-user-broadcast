@@ -39,7 +39,7 @@ payload map (
 	// remove forbidden fields for upsert
 	$ - "type" - "LastModifiedDate"
 	// add profile id and unique username
-	++ {
+	+ {
 		ProfileId 	: p("sfdc.b.profile.id"),
 		Username	: $.Username + ".target"
 	}
