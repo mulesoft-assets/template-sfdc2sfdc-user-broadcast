@@ -5,24 +5,24 @@ xmlns:json="http://www.mulesoft.org/schema/mule/json"
 xmlns="http://www.mulesoft.org/schema/mule/core" 
 xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
 xmlns:spring="http://www.springframework.org/schema/beans" 
-version="EE-3.7.0" 
+version="EE-3.7.1" 
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
 
-    <sub-flow name="retrieveUserFromAFlow" doc:name="retrieveUserFromAFlow">
+    <sub-flow name="retrieveUserFromAFlow" >
         <sfdc:query-single config-ref="SalesforceA" query="SELECT Id, Email, FirstName, LastName, Username, Alias, Title, TimeZoneSidKey, LocaleSidKey, EmailEncodingKey, ProfileId, LanguageLocaleKey FROM User WHERE Email = '#[payload['Email']]'" doc:name="retrieve User in Salesforce instance A"/>
         <logger level="INFO" message="Retrieve User from A result: #[payload]" doc:name="Logger"/>
     </sub-flow>
-    <sub-flow name="updateUserInAFlow" doc:name="updateUserInAFlow">
+    <sub-flow name="updateUserInAFlow" >
          <sfdc:upsert config-ref="SalesforceA" externalIdFieldName="Id" type="User" doc:name="update User in Salesforce Instance A">
              <sfdc:objects ref="#[payload]"/>
          </sfdc:upsert>
         <logger level="INFO" message="Update User in A result: #[payload]" doc:name="Logger"/>
     </sub-flow>
-    <sub-flow name="retrieveUserFromBFlow" doc:name="retrieveUserFromBFlow">
+    <sub-flow name="retrieveUserFromBFlow" >
         <sfdc:query-single config-ref="SalesforceB" query="SELECT Email, FirstName, LastName, Username, Alias, Title, TimeZoneSidKey, LocaleSidKey, EmailEncodingKey, ProfileId, LanguageLocaleKey FROM User WHERE Email = '#[payload['Email']]'" doc:name="retrieve User in Salesforce instance B"/>
         <logger level="INFO" message="Retrieve User from B result: #[payload]" doc:name="Logger"/>
     </sub-flow>  

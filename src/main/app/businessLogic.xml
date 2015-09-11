@@ -7,7 +7,7 @@
 	xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:spring="http://www.springframework.org/schema/beans" 
-	version="EE-3.7.0"
+	version="EE-3.7.1"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xmlns:json="http://www.mulesoft.org/schema/mule/json"
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
@@ -41,7 +41,7 @@ payload map (
 	// add profile id and unique username
 	++ {
 		ProfileId 	: p("sfdc.b.profile.id"),
-		Username	: $.Username ++ ".target"
+		Username	: $.Username + ".target"
 	}
 )	
 ]]></dw:set-payload>
