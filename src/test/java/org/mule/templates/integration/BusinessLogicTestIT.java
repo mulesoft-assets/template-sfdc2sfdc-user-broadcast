@@ -37,7 +37,7 @@ import com.mulesoft.module.batch.BatchTestHelper;
 public class BusinessLogicTestIT extends AbstractTemplateTestCase {
 
 	// TODO - Replace this Email with one of your Test User's mail
-	private static final String USER_TO_UPDATE_EMAIL = "noreply@chatter.salesforce.com";
+	private static final String USER_TO_UPDATE_EMAIL = "vvv@vvv.sk";
 	private BatchTestHelper helper;
 	private Map<String, Object> userToUpdate;
 
@@ -78,7 +78,7 @@ public class BusinessLogicTestIT extends AbstractTemplateTestCase {
 		retrieveUserFromBFlow = getSubFlow("retrieveUserFromBFlow");
 		retrieveUserFromBFlow.initialise();
 		
-		retrieveUserByNameFromBFlow = getSubFlow("retrieveUserByNameFromBFlow");
+		retrieveUserByNameFromBFlow = getSubFlow("retrieveUserByNameEmailAliasFromBFlow");
 		retrieveUserByNameFromBFlow.initialise();
 				
 		retrieveUserFromAFlow = getSubFlow("retrieveUserFromAFlow");
@@ -157,6 +157,8 @@ public class BusinessLogicTestIT extends AbstractTemplateTestCase {
 
 		Map<String, Object> userToRetrieveByName = new HashMap<String, Object>();
 		userToRetrieveByName.put("FirstName", userToUpdate.get("FirstName"));
+		userToRetrieveByName.put("Email", userToUpdate.get("Email"));
+		userToRetrieveByName.put("Alias", userToUpdate.get("Alias"));		
 
 		MuleEvent event = retrieveUserByNameFromBFlow.process(getTestEvent(userToRetrieveByName, MessageExchangePattern.REQUEST_RESPONSE));
 
@@ -164,6 +166,7 @@ public class BusinessLogicTestIT extends AbstractTemplateTestCase {
 
 		// Assertion, if the upserted user was found
 		assertTrue(payload.size()> 0);
+		assertEquals("The user should have been sync and new name must match", userToUpdate.get("FirstName"), payload.get("FirstName"));
 	}
 
 }

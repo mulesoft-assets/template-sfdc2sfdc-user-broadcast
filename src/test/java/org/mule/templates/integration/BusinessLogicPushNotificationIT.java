@@ -36,6 +36,7 @@ public class BusinessLogicPushNotificationIT extends AbstractTemplateTestCase {
 	
 	private static final int TIMEOUT_MILLIS = 60;
 	private static final String USER_EMAIL = "First@email.sk";
+	private static final String ALIAS = "First";
 	private BatchTestHelper helper;
 	private Flow triggerPushFlow;
 	
@@ -71,7 +72,7 @@ public class BusinessLogicPushNotificationIT extends AbstractTemplateTestCase {
 		retrieveUserFromBFlow = getSubFlow("retrieveUserFromBFlow");
 		retrieveUserFromBFlow.initialise();
 		
-		retrieveUserByNameFromBFlow = getSubFlow("retrieveUserByNameFromBFlow");
+		retrieveUserByNameFromBFlow = getSubFlow("retrieveUserByNameEmailAliasFromBFlow");
 		retrieveUserByNameFromBFlow.initialise();
 	}
 	
@@ -100,6 +101,8 @@ public class BusinessLogicPushNotificationIT extends AbstractTemplateTestCase {
 
 		Map<String, Object> userToRetrieveByName = new HashMap<String, Object>();
 		userToRetrieveByName.put("FirstName", firstName);
+		userToRetrieveByName.put("Alias", ALIAS);
+		userToRetrieveByName.put("Email", USER_EMAIL);
 
 		final MuleEvent retrieveEvent = retrieveUserByNameFromBFlow.process(getTestEvent(userToRetrieveByName, MessageExchangePattern.REQUEST_RESPONSE));
 
@@ -123,15 +126,15 @@ public class BusinessLogicPushNotificationIT extends AbstractTemplateTestCase {
 		request.append("   <OrganizationId>00Dd0000000dtDqEAI</OrganizationId>");
 		request.append("   <ActionId>04kd0000000PCgvAAG</ActionId>");
 		request.append("   <SessionId xsi:nil=\"true\"/>");
-		request.append("   <EnterpriseUrl>https://na14.salesforce.com/services/Soap/c/30.0/00Dd0000000dtDq</EnterpriseUrl>");
-		request.append("   <PartnerUrl>https://na14.salesforce.com/services/Soap/u/30.0/00Dd0000000dtDq</PartnerUrl>");
+		request.append("   <EnterpriseUrl>https://na14.salesforce.com/services/Soap/c/32.0/00Dd0000000dtDq</EnterpriseUrl>");
+		request.append("   <PartnerUrl>https://na14.salesforce.com/services/Soap/u/32.0/00Dd0000000dtDq</PartnerUrl>");
 		request.append("   <Notification>");
-		//request.append("    <Id>001d000001XD5XKAA2</Id>");
+		request.append("    <Id>001d000001XD5XKAA2</Id>");
 		request.append("    <sObject xsi:type=\"sf:User\" xmlns:sf=\"sf:sobject.enterprise.soap.sforce.com\">");
-		//request.append("      <sf:Id>001d000001XD5XKAA2</sf:Id>");
+		request.append("      <sf:Id>001d000001XD5XKAA2</sf:Id>");
 		request.append("      <sf:ProfileId>00e80000001CDZBAA4</sf:ProfileId>");
 		request.append("      <sf:AboutMe>About me</sf:AboutMe>");
-		request.append("      <sf:Alias>First</sf:Alias>");
+		request.append("      <sf:Alias>" + ALIAS + "</sf:Alias>");
 		request.append("      <sf:City>Kosice</sf:City>");
 		request.append("      <sf:CommunityNickname>Community name</sf:CommunityNickname>");
 		request.append("      <sf:CompanyName>Hotovo</sf:CompanyName>");

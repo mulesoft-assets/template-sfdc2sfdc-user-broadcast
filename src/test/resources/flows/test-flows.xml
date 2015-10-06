@@ -5,7 +5,7 @@ xmlns:json="http://www.mulesoft.org/schema/mule/json"
 xmlns="http://www.mulesoft.org/schema/mule/core" 
 xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
 xmlns:spring="http://www.springframework.org/schema/beans" 
-version="EE-3.7.1" 
+version="EE-3.7.2" 
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
@@ -26,8 +26,8 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
         <sfdc:query-single config-ref="SalesforceB" query="SELECT Email, FirstName, LastName, Username, Alias, Title, TimeZoneSidKey, LocaleSidKey, EmailEncodingKey, ProfileId, LanguageLocaleKey FROM User WHERE Email = '#[payload['Email']]' and Active = true" doc:name="retrieve User in Salesforce instance B"/>
         <logger level="INFO" message="Retrieve User from B result: #[payload]" doc:name="Logger"/>
     </sub-flow>
-    <sub-flow name="retrieveUserByNameFromBFlow">
-        <sfdc:query-single config-ref="SalesforceB" query="dsql:SELECT Email, FirstName, LastName, Username, Alias, Title, TimeZoneSidKey, LocaleSidKey, EmailEncodingKey, ProfileId, LanguageLocaleKey FROM User WHERE FirstName = '#[payload['FirstName']]'" doc:name="retrieve User in Salesforce instance B"/>
+    <sub-flow name="retrieveUserByNameEmailAliasFromBFlow">
+        <sfdc:query-single config-ref="SalesforceB" query="dsql:SELECT Email, FirstName, LastName, Username, Alias, Title, TimeZoneSidKey, LocaleSidKey, EmailEncodingKey, ProfileId, LanguageLocaleKey FROM User WHERE FirstName = '#[payload['FirstName']]' AND Email = '#[payload['Email']]' AND Alias = '#[payload['Alias']]'" doc:name="retrieve User in Salesforce instance B"/>
         <logger message="Retrieve User from B result: #[payload]" level="INFO" doc:name="Logger"/>
     </sub-flow>  
        
