@@ -1,6 +1,9 @@
 {
   "configs": [
-    "template-sfdc2sfdc-user-broadcast.xml"
+    "config.xml",
+    "errorhandling.xml",
+    "businesslogic.xml",
+    "endpoints.xml"
   ],
   "redeploymentEnabled": true,
   "name": "template-sfdc2sfdc-user-broadcast",
