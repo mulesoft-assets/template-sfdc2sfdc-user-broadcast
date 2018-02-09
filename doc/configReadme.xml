@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<configuration>
+	<placeholders>
+		<placeholder id="template_name">Salesforce to Salesforce User Broadcast</placeholder>
+	</placeholders>
+	<sections>
+		<section id="use_case">
+As a Salesforce admin I want to synchronize Users between two Salesfoce orgs.
+
+This Template should serve as a foundation for setting an online sync of Users from one SalesForce instance to another. Everytime there is a new User or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the User on the target org.
+
+What about Passwords? When the User is updated in the target instance, the password is not changed and therefore there is nothing to concern about in this case. Password set in case of User creation is not being covered by this template considering that many different approaches can be selected.
+
+Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
+
+As implemented, this Template leverage the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
+The batch job is divided in Input, Process and On Complete stages.
+The integration is triggered by a poll defined in the flow that is going to trigger the application, querying newest SalesForce updates/creations matching a filter criteria and executing the batch job.
+During the Process stage, each SFDC User will be filtered depending on, if it has an existing matching user in the SFDC Org B.
+The last step of the Process stage will group the users and create/update them in SFDC Org B.
+Finally during the On Complete stage the Template will log output statistics data into the console.
+		</section>
+		<section id="considerations">
+<![CDATA[
+To make this Anypoint Template run, there are certain preconditions that must be considered. All of them deal with the preparations in both source and destination systems, that must be made in order for all to run smoothly. **Failling to do so could lead to unexpected behavior of the template.**
+
+1. **Users cannot be deleted in SalesForce:** For now, the only thing to do regarding users removal is disabling/deactivating them, but this won't make the username available for a new user.
+2. **Each user needs to be associated to a Profile:** SalesForce's profiles are what define the permissions the user will have for manipulating data and other users. Each SalesForce account has its own profiles. In this kick you will find a processor labeled *Prepare for Upsert* where we map your Profile Ids from the source account to the ones in the target account. Note that for the integration test to run properly, you should change the constant *DEFAULT_PROFILE_ID* in *BusinessLogicTestIT* to one that's valid in your source test organization.
+3. **Working with sandboxes for the same account**: Although each sandbox should be a completely different environment, Usernames cannot be repeated in different sandboxes, i.e. if you have a user with username *bob.dylan* in *sandbox A*, you will not be able to create another user with username *bob.dylan* in *sandbox B*. If you are indeed working with Sandboxes for the same SalesForce account you will need to map the source username to a different one in the target sandbox, for this purpose, please refer to the processor labeled *Prepare for Upsert*.
+]]>
+		</section>
+		<section id="run_it">
+<![CDATA[
+See below.
+]]>
+		</section>
+		<section id="running_on_standalone">
+<![CDATA[
+Once your app is all set and started, there is no need to do anything else. The application will poll SalesForce to know if there are any newly created or updated objects and synchronice them.
+]]>
+		</section>
+		<section id="running_on_cloudhub">
+<![CDATA[
+Once your app is all set and started, you will need to define Salesforce outbound messaging and a simple workflow rule. [This article will show you how to accomplish this](https://www.salesforce.com/us/developer/docs/api/Content/sforce_api_om_outboundmessaging_setting_up.htm)
+The most important setting here is the `Endpoint URL` which needs to point to your application running on Cloudbhub, eg. `http://yourapp.cloudhub.io:80`. Additionaly, try to add just few fields to the `Fields to Send` to keep it simple for begin.
+Once this all is done every time when you will make a change on Account in source Salesforce org. This account will be sent as a SOAP message to the Http endpoint of running application in Cloudhub.
+]]>
+		</section>
+		<section id="application_configuration">
+		<![CDATA[
+**Application configuration**
+		
++ scheduler.frequency `60000`
++ scheduler.startDelay `0`
++ page.size `100`
++ watermark.defaultExpression `YESTERDAY`
+
+#### SalesForce Connector configuration for company A
++ sfdc.a.username `bob.dylan@orga`
++ sfdc.a.password `DylanPassword123`
++ sfdc.a.securityToken `avsfwCUl7apQs56Xq2AKi3X`
+
+#### SalesForce Connector configuration for company B
++ sfdc.b.username `joan.baez@orgb`
++ sfdc.b.password `JoanBaez456`
++ sfdc.b.securityToken `ces56arl7apQs56XTddf34X`
++ sfdc.b.profile.id `00f10000003JzFxAAX`
+]]>
+		</section>
+		<section id="api_calls">
+		<![CDATA[
+SalesForce imposes limits on the number of API Calls that can be made. Therefore calculating this amount may be an important factor to consider. User Broadcast Template calls to the API can be calculated using the formula:
+
+***1 + UsersToSync + UsersToSync / CommitSize***
+
+Being ***UsersToSync*** the number of Users to be synchronized on each run. 
+
+The division by ***CommitSize*** is because by default, for each Upsert API Call, Users are gathered in groups of a number defined by the Commit Size property. Also consider that this calls are executed repeatedly every polling cycle.	
+
+For instance if 10 records are fetched from origin instance, then 12 api calls will be made (1 + 10 + 1).
+]]>
+		</section>
+		<section id="default_business_logic_xml">
+		<![CDATA[
+Functional aspect of the Template is implemented on this XML, directed by a batch job that will be responsible for creations/updates. The several message processors constitute four high level actions that fully implement the logic of this Template:
+
+1. During the Input stage the Template will go to the SalesForce Org A and query all the existing users that match the filter criteria.
+2. During the Process stage, each SFDC User will be filtered depending on, if it has an existing matching user in the SFDC Org B.
+3. The last step of the Process stage will group the users and create/update them in SFDC Org B.
+4. Finally during the On Complete stage the Template will logoutput statistics data into the console.
+]]>
+		</section>
+		<section id="default_endpoints_xml">
+		<![CDATA[
+This file is conformed by two flows.
+
+The first one we'll call it **scheduler** flow. This one contains the Scheduler endpoint that will periodically trigger **watermarking** flow and then executing the batch job process.
+
+The second one we'll call it **watermarking** flow. This one contains watermarking logic that will be querying Salasforce for updated/created Users that meet the defined criteria in the query since the last polling. The last invocation timestamp is stored by using Objectstore Component and updated after each Salasforce query.
+
+
+]]>
+		</section>
+	</sections>
+</configuration>
