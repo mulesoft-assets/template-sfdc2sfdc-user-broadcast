@@ -96,7 +96,7 @@ This file is conformed by two flows.
 
 The first one we'll call it **scheduler** flow. This one contains the Scheduler endpoint that will periodically trigger **watermarking** flow and then executing the batch job process.
 
-The second one we'll call it **watermarking** flow. This one contains watermarking logic that will be querying Salasforce for updated/created Leads that meet the defined criteria in the query since the last polling. The last invocation timestamp is stored by using Objectstore Component and updated after each Salasforce query.
+The second one we'll call it **watermarking** flow. This one contains watermarking logic that will be querying Salasforce for updated/created Users that meet the defined criteria in the query since the last polling. The last invocation timestamp is stored by using Objectstore Component and updated after each Salasforce query.
 
 
 ]]>
