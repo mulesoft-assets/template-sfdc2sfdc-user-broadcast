@@ -5,6 +5,7 @@
     "businesslogic.xml",
     "endpoints.xml"
   ],
+  "secureProperties": [],
   "redeploymentEnabled": true,
   "name": "template-sfdc2sfdc-user-broadcast",
   "minMuleVersion": "4.0.0",
