@@ -1,9 +1,9 @@
 {
   "configs": [
+    "businessLogic.xml",
     "config.xml",
-    "errorhandling.xml",
-    "businesslogic.xml",
-    "endpoints.xml"
+    "endpoints.xml",
+    "errorHandling.xml"
   ],
   "secureProperties": [],
   "redeploymentEnabled": true,

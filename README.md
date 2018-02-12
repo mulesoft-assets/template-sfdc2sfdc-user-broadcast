@@ -27,15 +27,15 @@ Please review the terms of the license before downloading and using this templat
 # Use Case <a name="usecase"/>
 As a Salesforce admin I want to synchronize Users between two Salesfoce orgs.
 
-This Template should serve as a foundation for setting an online sync of Users from one SalesForce instance to another. Everytime there is a new User or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the User on the target org.
+This Template should serve as a foundation for setting an online sync of Users from one SalesForce instance to another. Everytime there is new User or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the User on the target org.
 
 What about Passwords? When the User is updated in the target instance, the password is not changed and therefore there is nothing to concern about in this case. Password set in case of User creation is not being covered by this template considering that many different approaches can be selected.
 
 Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
 
-As implemented, this Template leverage the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
-The batch job is divided in Input, Process and On Complete stages.
-The integration is triggered by a poll defined in the flow that is going to trigger the application, querying newest SalesForce updates/creations matching a filter criteria and executing the batch job.
+As implemented, this Template leverages the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
+The batch job is divided in Process and On Complete stages.
+The integration is triggered by a scheduler defined in the flow that is going to trigger the application, querying newest SalesForce updates/creations matching a filter criteria and executing the batch job.
 During the Process stage, each SFDC User will be filtered depending on, if it has an existing matching user in the SFDC Org B.
 The last step of the Process stage will group the users and create/update them in SFDC Org B.
 Finally during the On Complete stage the Template will log output statistics data into the console.
@@ -44,7 +44,7 @@ Finally during the On Complete stage the Template will log output statistics dat
 
 To make this Anypoint Template run, there are certain preconditions that must be considered. All of them deal with the preparations in both source and destination systems, that must be made in order for all to run smoothly. **Failling to do so could lead to unexpected behavior of the template.**
 
-1. **Users cannot be deleted in SalesForce:** For now, the only thing to do regarding users removal is disabling/deactivating them, but this won't make the username available for a new user.
+1. **Users cannot be deleted in SalesForce:** For now, the only thing to do regarding users removal is disabling/deactivating them, but this won't make the username available for new user.
 2. **Each user needs to be associated to a Profile:** SalesForce's profiles are what define the permissions the user will have for manipulating data and other users. Each SalesForce account has its own profiles. In this kick you will find a processor labeled *Prepare for Upsert* where we map your Profile Ids from the source account to the ones in the target account. Note that for the integration test to run properly, you should change the constant *DEFAULT_PROFILE_ID* in *BusinessLogicTestIT* to one that's valid in your source test organization.
 3. **Working with sandboxes for the same account**: Although each sandbox should be a completely different environment, Usernames cannot be repeated in different sandboxes, i.e. if you have a user with username *bob.dylan* in *sandbox A*, you will not be able to create another user with username *bob.dylan* in *sandbox B*. If you are indeed working with Sandboxes for the same SalesForce account you will need to map the source username to a different one in the target sandbox, for this purpose, please refer to the processor labeled *Prepare for Upsert*.
 
