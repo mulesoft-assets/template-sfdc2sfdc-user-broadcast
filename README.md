@@ -25,28 +25,28 @@ Note that using this template is subject to the conditions of this [License Agre
 Please review the terms of the license before downloading and using this template. In short, you are allowed to use the template for free with Mule ESB Enterprise Edition, CloudHub, or as a trial in Anypoint Studio.
 
 # Use Case <a name="usecase"/>
-As a Salesforce admin I want to synchronize Users between two Salesfoce orgs.
+As a Salesforce admin I want to migrate Users from one Salesforce organization to another one.
 
-This Template should serve as a foundation for setting an online sync of Users from one SalesForce instance to another. Everytime there is new User or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the User on the target org.
+This Template should serve as a foundation for setting an online sync of Users from one Salesforce instance to another. Everytime there is new User or a change in an already existing one, the integration will poll for changes in Salesforce source instance and it will be responsible for updating the User on the target org.
 
 What about Passwords? When the User is updated in the target instance, the password is not changed and therefore there is nothing to concern about in this case. Password set in case of User creation is not being covered by this template considering that many different approaches can be selected.
 
 Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
 
 As implemented, this Template leverages the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
-The batch job is divided in Process and On Complete stages.
-The integration is triggered by a scheduler defined in the flow that is going to trigger the application, querying newest SalesForce updates/creations matching a filter criteria and executing the batch job.
-During the Process stage, each SFDC User will be filtered depending on, if it has an existing matching user in the SFDC Org B.
-The last step of the Process stage will group the users and create/update them in SFDC Org B.
-Finally during the On Complete stage the Template will log output statistics data into the console.
+The batch job is divided in *Process* and *On Complete* stages.
+The integration is triggered by a scheduler defined in the flow that is going to trigger the application, querying newest Salesforce updates/creations matching a filter criteria and executing the batch job.
+During the *Process* stage, each Salesforce User will be filtered depending on, if it has an existing matching user in the Salesforce Org B.
+The last step of the *Process* stage will group the users and create/update them in Salesforce Org B.
+Finally during the *On Complete* stage the Template will log output statistics data into the console.
 
 # Considerations <a name="considerations"/>
 
-To make this Anypoint Template run, there are certain preconditions that must be considered. All of them deal with the preparations in both source and destination systems, that must be made in order for all to run smoothly. **Failling to do so could lead to unexpected behavior of the template.**
+To make this Anypoint Template run, there are certain preconditions that must be considered. All of them deal with the preparations in both source and destination systems, that must be made in order for all to run smoothly. **Failing to do so could lead to unexpected behavior of the template.**
 
-1. **Users cannot be deleted in SalesForce:** For now, the only thing to do regarding users removal is disabling/deactivating them, but this won't make the username available for new user.
-2. **Each user needs to be associated to a Profile:** SalesForce's profiles are what define the permissions the user will have for manipulating data and other users. Each SalesForce account has its own profiles. In this kick you will find a processor labeled *Prepare for Upsert* where we map your Profile Ids from the source account to the ones in the target account. Note that for the integration test to run properly, you should change the constant *DEFAULT_PROFILE_ID* in *BusinessLogicTestIT* to one that's valid in your source test organization.
-3. **Working with sandboxes for the same account**: Although each sandbox should be a completely different environment, Usernames cannot be repeated in different sandboxes, i.e. if you have a user with username *bob.dylan* in *sandbox A*, you will not be able to create another user with username *bob.dylan* in *sandbox B*. If you are indeed working with Sandboxes for the same SalesForce account you will need to map the source username to a different one in the target sandbox, for this purpose, please refer to the processor labeled *Prepare for Upsert*.
+1. **Users cannot be deleted in Salesforce:** For now, the only thing to do regarding users removal is disabling/deactivating them, but this won't make the username available for new user.
+2. **Each user needs to be associated to a Profile:** Salesforce's profiles are what define the permissions the user will have for manipulating data and other users. Each Salesforce account has its own profiles. In this kick you will find a processor labeled *Prepare for Upsert* where we map your Profile Ids from the source account to the ones in the target account. Note that for the integration test to run properly, you should change the constant *DEFAULT_PROFILE_ID* in *BusinessLogicTestIT* to one that's valid in your source test organization.
+3. **Working with sandboxes for the same account**: Although each sandbox should be a completely different environment, Usernames cannot be repeated in different sandboxes, i.e. if you have a user with username *bob.dylan* in *sandbox A*, you will not be able to create another user with username *bob.dylan* in *sandbox B*. If you are indeed working with Sandboxes for the same Salesforce account you will need to map the source username to a different one in the target sandbox, for this purpose, please refer to the processor labeled *Prepare for Upsert*.
 
 
 
@@ -102,7 +102,7 @@ There are no particular considerations for this Anypoint Template regarding Sale
 
 # Run it! <a name="runit"/>
 Simple steps to get Salesforce to Salesforce User Broadcast running.
-See below.
+
 
 ## Running on premise <a name="runonopremise"/>
 In this section we detail the way you should run your Anypoint Template on your computer.
@@ -118,10 +118,8 @@ First thing to know if you are a newcomer to Mule is where to get the tools.
 ### Importing an Anypoint Template into Studio
 Mule Studio offers several ways to import a project into the workspace, for instance: 
 
-+ Anypoint Studio generated Deployable Archive (.zip)
-+ Anypoint Studio Project from External Location
-+ Maven-based Mule Project from pom.xml
-+ Mule ESB Configuration XML from External Location
++ Anypoint Studio Project from File System
++ Packaged mule application (.jar)
 
 You can find a detailed description on how to do so in this [Documentation Page](http://www.mulesoft.org/documentation/display/current/Importing+and+Exporting+in+Studio).
 
@@ -138,12 +136,12 @@ Once you have imported you Anypoint Template into Anypoint Studio you need to fo
 
 ### Running on Mule ESB stand alone <a name="runonmuleesbstandalone"/>
 Complete all properties in one of the property files, for example in [mule.prod.properties] (../master/src/main/resources/mule.prod.properties) and run your app with the corresponding environment variable to use it. To follow the example, this will be `mule.env=prod`. 
-Once your app is all set and started, there is no need to do anything else. The application will poll SalesForce to know if there are any newly created or updated objects and synchronice them.
+Once your app is all set and started, there is no need to do anything else. The application will poll Salesforce to know if there are any newly created or updated objects and synchronize them.
 
 ## Running on CloudHub <a name="runoncloudhub"/>
 While [creating your application on CloudHub](http://www.mulesoft.org/documentation/display/current/Hello+World+on+CloudHub) (Or you can do it later as a next step), you need to go to Deployment > Advanced to set all environment variables detailed in **Properties to be configured** as well as the **mule.env**.
 Once your app is all set and started, you will need to define Salesforce outbound messaging and a simple workflow rule. [This article will show you how to accomplish this](https://www.salesforce.com/us/developer/docs/api/Content/sforce_api_om_outboundmessaging_setting_up.htm)
-The most important setting here is the `Endpoint URL` which needs to point to your application running on Cloudbhub, eg. `http://yourapp.cloudhub.io:80`. Additionaly, try to add just few fields to the `Fields to Send` to keep it simple for begin.
+The most important setting here is the `Endpoint URL` which needs to point to your application running on CloudbHub, eg. `http://yourapp.cloudhub.io:80`. Additionally, try to add just few fields to the `Fields to Send` to keep it simple for begin.
 Once this all is done every time when you will make a change on Account in source Salesforce org. This account will be sent as a SOAP message to the Http endpoint of running application in Cloudhub.
 
 ### Deploying your Anypoint Template on CloudHub <a name="deployingyouranypointtemplateoncloudhub"/>
@@ -153,32 +151,35 @@ Mule Studio provides you with really easy way to deploy your Template directly t
 ## Properties to be configured (With examples) <a name="propertiestobeconfigured"/>
 In order to use this Mule Anypoint Template you need to configure properties (Credentials, configurations, etc.) either in properties file or in CloudHub as Environment Variables. Detail list with examples:
 ### Application configuration
-**Application configuration**
-		
+**Scheduler configuration**
 + scheduler.frequency `60000`
 + scheduler.startDelay `0`
-+ page.size `100`
-+ watermark.defaultExpression `YESTERDAY`
 
-#### SalesForce Connector configuration for company A
+**Batch Aggregator configuration**
++ page.size `100`
+
+**Watermarking default last query timestamp e.g. 2017-12-13T03:00:59Z**
++ watermark.defaultExpression `2017-12-13T03:00:59Z`
+
+**Salesforce Connector configuration for company A**
 + sfdc.a.username `bob.dylan@orga`
 + sfdc.a.password `DylanPassword123`
 + sfdc.a.securityToken `avsfwCUl7apQs56Xq2AKi3X`
 
-#### SalesForce Connector configuration for company B
+**Salesforce Connector configuration for company B**
 + sfdc.b.username `joan.baez@orgb`
 + sfdc.b.password `JoanBaez456`
 + sfdc.b.securityToken `ces56arl7apQs56XTddf34X`
 + sfdc.b.profile.id `00f10000003JzFxAAX`
 
 # API Calls <a name="apicalls"/>
-SalesForce imposes limits on the number of API Calls that can be made. Therefore calculating this amount may be an important factor to consider. User Broadcast Template calls to the API can be calculated using the formula:
+Salesforce imposes limits on the number of API Calls that can be made. Therefore calculating this amount may be an important factor to consider. User Broadcast Template calls to the API can be calculated using the formula:
 
-***1 + UsersToSync + UsersToSync / CommitSize***
+***1 + X + X / ${page.size}***
 
-Being ***UsersToSync*** the number of Users to be synchronized on each run. 
+Being ***X*** the number of Users to be synchronized on each run. 
 
-The division by ***CommitSize*** is because by default, for each Upsert API Call, Users are gathered in groups of a number defined by the Commit Size property. Also consider that this calls are executed repeatedly every polling cycle.	
+The division by ***${page.size}*** is because by default, for each Upsert API Call, Users are gathered in groups of a number defined by the ${page.size} property. Also consider that this calls are executed repeatedly every polling cycle.	
 
 For instance if 10 records are fetched from origin instance, then 12 api calls will be made (1 + 10 + 1).
 
@@ -203,12 +204,11 @@ In the visual editor they can be found on the *Global Element* tab.
 
 
 ## businessLogic.xml<a name="businesslogicxml"/>
-Functional aspect of the Template is implemented on this XML, directed by a batch job that will be responsible for creations/updates. The several message processors constitute four high level actions that fully implement the logic of this Template:
+Functional aspect of the Template is implemented on this XML, directed by a batch job that will be responsible for creations/updates. The several message processors constitute high level actions that fully implement the logic of this Template:
 
-1. During the Input stage the Template will go to the SalesForce Org A and query all the existing users that match the filter criteria.
-2. During the Process stage, each SFDC User will be filtered depending on, if it has an existing matching user in the SFDC Org B.
-3. The last step of the Process stage will group the users and create/update them in SFDC Org B.
-4. Finally during the On Complete stage the Template will logoutput statistics data into the console.
+1. During the *Process* stage, each Salesforce User will be filtered depending on, if it has an existing matching user in the Salesforce Org B.
+2. The last step of the *Process* stage will group the users and create/update them in Salesforce Org B.
+3. Finally during the *On Complete* stage the Template will log output statistics data into the console.
 
 
 
@@ -217,7 +217,7 @@ This file is conformed by two flows.
 
 The first one we'll call it **scheduler** flow. This one contains the Scheduler endpoint that will periodically trigger **watermarking** flow and then executing the batch job process.
 
-The second one we'll call it **watermarking** flow. This one contains watermarking logic that will be querying Salasforce for updated/created Users that meet the defined criteria in the query since the last polling. The last invocation timestamp is stored by using Objectstore Component and updated after each Salasforce query.
+The second one we'll call it **watermarking** flow. This one contains watermarking logic that will be querying Salesforce for updated/created Users that meet the defined criteria in the query since the last polling. The last invocation timestamp is stored by using Objectstore Component and updated after each Salesforce query.
 
 
 
