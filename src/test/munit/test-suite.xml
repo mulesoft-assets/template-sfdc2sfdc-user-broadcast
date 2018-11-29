@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+	xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<munit:config name="new-test-suite.xml" />
+	<configuration-properties doc:name="Configuration properties"
+		file="mule.test.properties" />
+	<configuration-properties doc:name="Configuration properties"
+		file="common.properties" />
+	<configuration-properties doc:name="Configuration properties"
+		file="mule-artifact.properties" />
+	<munit:before-test name="test-suiteBefore_Test" description="Before tests actions" doc:id="4e94f673-aa35-4804-ab52-3270fced7013" >
+		<set-variable value='#[uuid()[0 to 3]]' doc:name="Set Variable alias" doc:id="7883d3bd-3965-4dcc-9e0f-601b712f4816" variableName="alias" />
+		<salesforce:query doc:name="Query User from Salesforce A" doc:id="cd2d9557-21db-45e2-8766-d928226ab584" config-ref="Salesforce_Sfdc_A_config" target="userA">
+			<salesforce:salesforce-query >SELECT Email, FirstName, LastName,Username, Phone, Alias, TimeZoneSidKey, LocaleSidKey, EmailEncodingKey, ProfileId, LanguageLocaleKey, LastModifiedDate FROM User WHERE Email=':email' AND Username=':username' LIMIT 1</salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"email" : p('sfdc.test.user.email'),
+	"username" : p('sfdc.test.user.username')
+}]]]></salesforce:parameters>
+		</salesforce:query>
+	</munit:before-test>
+	<munit:test name="test-suiteTest" description="MUnit Test" doc:id="e43e223e-394b-46c9-b4f5-f08988da90c4" >
+		<munit:execution >
+			<ee:transform doc:name="Transform Message" doc:id="5e2a6087-72c1-4cca-b5f2-160d9e121d98" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[
+	{
+		Email: vars.userA[0].Email,
+		FirstName: vars.userA[0].FirstName, 
+		LastName: vars.userA[0].LastName, 
+		Username: vars.userA[0].Username, 
+		Alias: vars.alias, 
+		TimeZoneSidKey: vars.userA[0].TimeZoneSidKey, 
+		LocaleSidKey: vars.userA[0].LocaleSidKey, 
+		EmailEncodingKey: vars.userA[0].EmailEncodingKey, 
+		ProfileId: vars.userA[0].ProfileId, 
+		LanguageLocaleKey: vars.userA[0].LanguageLocaleKey,
+	}	
+]]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="Flow Reference" doc:id="fe1f6fcc-a431-480d-ae87-ce4e624d02ab" name="businesslogicFlow" />
+			<scripting:execute engine="groovy" doc:id="7afa056a-8350-4d8c-a11f-cd0ac9acb945" doc:name="Sleep for 10s until the processing is completed">
+				<scripting:code>sleep(10000)</scripting:code>
+			</scripting:execute>			
+		</munit:execution>
+		<munit:validation >
+			<salesforce:query doc:name="Query changed User from Salesforce B" doc:id="02dba68a-56c2-4728-889b-636ade785548" config-ref="Salesforce_Sfdc_B_config" target="changedUserB">
+				<salesforce:salesforce-query>SELECT Id, Email, FirstName, LastName,Username, Phone, Alias, TimeZoneSidKey, LocaleSidKey, EmailEncodingKey, ProfileId, LanguageLocaleKey, LastModifiedDate FROM User WHERE Email=':email' LIMIT 1</salesforce:salesforce-query>
+				<salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	"email" : p('sfdc.test.user.email')
+}]]]></salesforce:parameters>
+			</salesforce:query>
+			<munit-tools:assert-that doc:name="Assert that Alias has changed" doc:id="eac8ff92-945b-46fd-8b13-1766cc6d48f1" expression="#[vars.changedUserB[0].Alias]" is="#[MunitTools::equalTo(vars.alias)]" message="Unexpected Alias" />
+		</munit:validation>
+	</munit:test>
+
+
+</mule>
