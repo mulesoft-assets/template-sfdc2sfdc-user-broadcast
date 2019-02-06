@@ -23,12 +23,19 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 	<munit:before-test name="test-suiteBefore_Test" description="Before tests actions" doc:id="4e94f673-aa35-4804-ab52-3270fced7013" >
 		<set-variable value='#[uuid()[0 to 3]]' doc:name="Set Variable alias" doc:id="7883d3bd-3965-4dcc-9e0f-601b712f4816" variableName="alias" />
 		<salesforce:query doc:name="Query User from Salesforce A" doc:id="cd2d9557-21db-45e2-8766-d928226ab584" config-ref="Salesforce_Sfdc_A_config" target="userA">
-			<salesforce:salesforce-query >SELECT Email, FirstName, LastName,Username, Phone, Alias, TimeZoneSidKey, LocaleSidKey, EmailEncodingKey, ProfileId, LanguageLocaleKey, LastModifiedDate FROM User WHERE Email=':email' AND Username=':username' LIMIT 1</salesforce:salesforce-query>
+			<salesforce:salesforce-query >SELECT Email, FirstName, LastName,Username, Phone, Alias, TimeZoneSidKey, LocaleSidKey, EmailEncodingKey, ProfileId, LanguageLocaleKey, LastModifiedDate FROM User WHERE Id=':id'</salesforce:salesforce-query>
 			<salesforce:parameters ><![CDATA[#[output application/java
 ---
 {
-	"email" : p('sfdc.test.user.email'),
-	"username" : p('sfdc.test.user.username')
+	"id" : p('sfdc.test.user.id')
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<salesforce:query doc:name="Query untouched User from Salesforce B" doc:id="54d11049-4eb6-4b05-868f-feae41a19b04" config-ref="Salesforce_Sfdc_B_config" target="userB" >
+			<salesforce:salesforce-query >SELECT Id, Alias FROM User WHERE Email=':email'</salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"email" : p('sfdc.test.user.email')
 }]]]></salesforce:parameters>
 		</salesforce:query>
 	</munit:before-test>
@@ -56,7 +63,7 @@ output application/java
 				</ee:message>
 			</ee:transform>
 			<flow-ref doc:name="Flow Reference" doc:id="fe1f6fcc-a431-480d-ae87-ce4e624d02ab" name="businesslogicFlow" />
-			<scripting:execute engine="groovy" doc:id="7afa056a-8350-4d8c-a11f-cd0ac9acb945" doc:name="Sleep for 10s until the processing is completed">
+			<scripting:execute engine="groovy" doc:id="7afa056a-8350-4d8c-a11f-cd0ac9acb945" doc:name="Sleep for 10s until the processing is completed" target="sleep">
 				<scripting:code>sleep(10000)</scripting:code>
 			</scripting:execute>			
 		</munit:execution>
@@ -69,9 +76,15 @@ output application/java
 	"email" : p('sfdc.test.user.email')
 }]]]></salesforce:parameters>
 			</salesforce:query>
+			<munit-tools:assert-that doc:name="Assert that there is the only one user with specified email in B" doc:id="e11b4e50-6b93-45ce-ab54-4a1775d27375" expression="#[sizeOf(vars.changedUserB)]" is="#[MunitTools::equalTo(1)]" message="Only 1 user shoul be with specified email in SFDC B"/>
 			<munit-tools:assert-that doc:name="Assert that Alias has changed" doc:id="eac8ff92-945b-46fd-8b13-1766cc6d48f1" expression="#[vars.changedUserB[0].Alias]" is="#[MunitTools::equalTo(vars.alias)]" message="Unexpected Alias" />
 		</munit:validation>
 	</munit:test>
+	<munit:after-test name="test-suiteAfter_Test" description="After tests actions" doc:id="652407ea-9240-4b7d-ab34-b86d612830d4" >
+		<salesforce:update doc:name="Revert user in SFDC B" doc:id="a8321dc3-647c-4b20-9ead-a842b156b787" config-ref="Salesforce_Sfdc_B_config" type="User">
+			<salesforce:records ><![CDATA[#[vars.userB]]]></salesforce:records>
+		</salesforce:update>
+	</munit:after-test>
 
 
 </mule>
