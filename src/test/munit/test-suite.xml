@@ -76,7 +76,7 @@ output application/java
 	"email" : p('sfdc.test.user.email')
 }]]]></salesforce:parameters>
 			</salesforce:query>
-			<munit-tools:assert-that doc:name="Assert that there is the only one user with specified email in B" doc:id="e11b4e50-6b93-45ce-ab54-4a1775d27375" expression="#[sizeOf(vars.changedUserB)]" is="#[MunitTools::equalTo(1)]" message="Only 1 user shoul be with specified email in SFDC B"/>
+			<munit-tools:assert-that doc:name="Assert that there is the only one user with specified email in B" doc:id="e11b4e50-6b93-45ce-ab54-4a1775d27375" expression="#[sizeOf(vars.changedUserB)]" is="#[MunitTools::equalTo(1)]" message="Only 1 user should be with specified email in SFDC B"/>
 			<munit-tools:assert-that doc:name="Assert that Alias has changed" doc:id="eac8ff92-945b-46fd-8b13-1766cc6d48f1" expression="#[vars.changedUserB[0].Alias]" is="#[MunitTools::equalTo(vars.alias)]" message="Unexpected Alias" />
 		</munit:validation>
 	</munit:test>
