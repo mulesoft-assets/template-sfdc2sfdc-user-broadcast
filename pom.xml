@@ -25,7 +25,7 @@
             <groupId>org.mule.modules</groupId>
             <artifactId>mule-scripting-module</artifactId>
             <classifier>mule-plugin</classifier>
-        </dependency>        
+        </dependency>
     	<dependency>
             <groupId>com.mulesoft.munit</groupId>
             <artifactId>munit-runner</artifactId>
@@ -36,13 +36,19 @@
             <artifactId>munit-tools</artifactId>
             <classifier>mule-plugin</classifier>
             <scope>test</scope>
-        </dependency>        
+        </dependency>
     </dependencies>
     <repositories>
         <repository>
             <id>anypoint-exchange</id>
             <name>Anypoint Exchange</name>
             <url>https://maven.anypoint.mulesoft.com/api/v1/maven</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <id>mulesoft-releases</id>
+            <name>MuleSoft Releases Repository</name>
+            <url>https://repository.mulesoft.org/releases/</url>
             <layout>default</layout>
         </repository>
     </repositories>
